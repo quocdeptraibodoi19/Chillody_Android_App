@@ -39,8 +39,6 @@ public class SoundCloudAsyncTask extends AsyncTask<String,Void,Void> {
     }
     @Override
     protected Void doInBackground(String... strings) {
-        // This is to get the result of the search API to the soundcloud.
-        // This contains the json containing the URL and The title of the song
         OkHttpClient client = new OkHttpClient();
         String EncodedTitle = new String(strings[0].getBytes(StandardCharsets.UTF_8));
         Request request = new Request.Builder()
