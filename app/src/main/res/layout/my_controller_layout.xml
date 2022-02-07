@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#5959C2"
+    android:padding="8dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/titletrackID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/preview_text"
+        android:fontFamily="@font/roboto"
+        android:textStyle="bold"
+        android:textColor="#FCFCFC"
+        android:textSize="16sp" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/exo_play_pause"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:padding="0dp"
+            android:src="@drawable/ic_play"
+            app:tint="#FCFCFC" />
+        <ImageView
+            android:id="@+id/exo_prev"
+            android:layout_centerVertical="true"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_toStartOf="@id/exo_play_pause"
+            android:src="@drawable/ic_prev"
+            app:tint="#FCFCFC"/>
+        <ImageView
+            android:id="@+id/exo_next"
+            android:layout_centerVertical="true"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_toEndOf="@id/exo_play_pause"
+            android:src="@drawable/ic_next"
+            app:tint="#FCFCFC"/>
+
+        <ImageView
+            android:id="@+id/heartbtnID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="32dp"
+            android:src="@drawable/white_heart_regular_24px"
+            app:tint="#FCFCFC" />
+    </RelativeLayout>
+</LinearLayout>

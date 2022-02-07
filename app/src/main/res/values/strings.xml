@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Chillody</string>
+    <string name="preview_text">Lorem ipsum dolor sit.</string>
+    <string name="chillody_name">Chillody</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

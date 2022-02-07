@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_nav"
+    app:startDestination="@id/home_fragment">
+    <fragment
+        android:id="@+id/home_fragment"
+        android:name="com.example.chillody.Activity_Fragment.home_fragment"
+        android:label="home_layout_fragment"
+        tools:layout="@layout/home_layout_fragment" >
+        <action
+            android:id="@+id/action_home_fragment_to_music_fragment"
+            app:destination="@id/music_fragment" />
+        <action
+            android:id="@+id/action_home_fragment_to_loving_playlist_fragment"
+            app:destination="@id/loving_playlist_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/music_fragment"
+        android:name="com.example.chillody.Activity_Fragment.music_fragment"
+        android:label="music_layout_fragment"
+        tools:layout="@layout/music_layout_fragment" >
+        <action
+            android:id="@+id/action_music_fragment_to_home_fragment"
+            app:destination="@id/home_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loving_playlist_fragment"
+        android:name="com.example.chillody.Activity_Fragment.loving_playlist_fragment"
+        android:label="loving_playlist_fragment_layout"
+        tools:layout="@layout/loving_playlist_fragment_layout" >
+        <action
+            android:id="@+id/action_loving_playlist_fragment_to_home_fragment"
+            app:destination="@id/home_fragment" />
+        <action
+            android:id="@+id/action_loving_playlist_fragment_to_music_fragment"
+            app:destination="@id/music_fragment" />
+    </fragment>
+</navigation>

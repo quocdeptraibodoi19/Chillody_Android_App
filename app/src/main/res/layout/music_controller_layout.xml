@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/musiclayouttitletrackID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/preview_text"
+        android:fontFamily="@font/roboto"
+        android:textStyle="bold"
+        android:textColor="#FCFCFC"
+        android:textSize="28sp" />
+    <TextView
+        android:id="@+id/exo_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="4:32"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="12dp" />
+    <com.google.android.exoplayer2.ui.DefaultTimeBar
+        android:id="@+id/exo_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="8dp"
+        app:scrubber_color="#C4C4C4"
+        app:played_color="#C4C4C4"
+        app:unplayed_color="#676767" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/exo_play_pause"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:padding="0dp"
+            android:src="@drawable/ic_play"
+            app:tint="#FCFCFC" />
+        <ImageView
+            android:id="@+id/exo_prev"
+            android:layout_centerVertical="true"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_toStartOf="@id/exo_play_pause"
+            android:src="@drawable/ic_prev"
+            app:tint="#FCFCFC"/>
+        <ImageView
+            android:id="@+id/exo_next"
+            android:layout_centerVertical="true"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_toEndOf="@id/exo_play_pause"
+            android:src="@drawable/ic_next"
+            app:tint="#FCFCFC"/>
+    </RelativeLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Next song"
+        android:layout_marginTop="8dp"
+        android:textSize="15sp"
+        android:fontFamily="@font/roboto"
+        android:textColor="#FCFCFC"
+        android:layout_marginHorizontal="32dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="12dp"
+        android:text="@string/preview_text"
+        android:textColor="#FCFCFC"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"/>
+</LinearLayout>
