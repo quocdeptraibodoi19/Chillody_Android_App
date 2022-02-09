@@ -44,6 +44,6 @@ public class home_fragment extends Fragment {
         categoryAdapter.setCategoryObjList(categoryObjList);
         binding.recyclerView.setAdapter(categoryAdapter);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
-        //new MusicQuoteAsyncTask(binding.MusicQuoteID,binding.ArtistID,binding.getRoot().getContext()).execute();
+        //new MusicQuoteRunnable(binding.MusicQuoteID,binding.ArtistID,binding.getRoot().getContext()).execute();
     }
 }

@@ -1,18 +1,25 @@
 package com.example.chillody.Model;
 
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.MutableLiveData;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class UnsplashImgModel {
+public class UnsplashImgModel extends AndroidViewModel {
    private List<UnsplashImgElement> unsplashImgElementList;
    private int cur;
    private int CurPage;
-   public UnsplashImgModel(){
+   public UnsplashImgModel(@NonNull Application application){
+       super(application);
        unsplashImgElementList = new ArrayList<>();
-       cur = 0;
+       cur =0;
        CurPage = 1;
    }
    public void addElement(UnsplashImgElement element){
@@ -21,11 +28,14 @@ public class UnsplashImgModel {
    public UnsplashImgElement getCurrentElement(){
        return unsplashImgElementList.get(cur);
    }
+   public UnsplashImgElement getElement(int i){
+       return unsplashImgElementList.get(i);
+   }
    public void NextOne(){
        cur++;
    }
    public void PreviousOne(){
-       if(cur!=0) cur --;
+       if(cur!=0)  cur--;
    }
    public void UpdatePage(){
        CurPage++;
@@ -40,4 +50,5 @@ public class UnsplashImgModel {
    public int getCur(){
        return cur;
    }
+
 }

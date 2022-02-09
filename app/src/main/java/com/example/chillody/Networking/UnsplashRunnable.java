@@ -27,13 +27,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class UnsplashAsyncTask extends AsyncTask<Void,Void,String> {
+public class UnsplashRunnable extends AsyncTask<Void,Void,String> {
     private com.example.chillody.Model.UnsplashImgModel UnsplashImgModel;
     private UnsplashImgAdapter unsplashImgAdapter;
     private String Query = "query=";
     private String Page = "page=";
     private WeakReference<ProgressBar> progressBarWeakReference;
-    public UnsplashAsyncTask(ProgressBar progressBar,UnsplashImgAdapter adapter, UnsplashImgModel model, String Query, String Page){
+    public UnsplashRunnable(ProgressBar progressBar, UnsplashImgAdapter adapter, UnsplashImgModel model, String Query, String Page){
         this.UnsplashImgModel = model;
         this.Query += Query;
         this.Page += Page;

@@ -30,10 +30,10 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 // Todo: search for the use of WeakReference
-public class SoundCloudAsyncTask extends AsyncTask<String,Void,Void> {
+public class SoundCloudRunnable extends AsyncTask<String,Void,Void> {
     private WeakReference<SoundCloudMusicModel> musicModelWeakReference;
     private final WeakReference<Context> context;
-    public SoundCloudAsyncTask(SoundCloudMusicModel model,Context context){
+    public SoundCloudRunnable(SoundCloudMusicModel model, Context context){
         musicModelWeakReference = new WeakReference<>(model);
         this.context = new WeakReference<>(context);
 
