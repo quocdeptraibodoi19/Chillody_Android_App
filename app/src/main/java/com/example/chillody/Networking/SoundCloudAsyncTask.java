@@ -32,11 +32,18 @@ import okhttp3.Response;
 // Todo: search for the use of WeakReference
 public class SoundCloudAsyncTask extends AsyncTask<String,Void,Void> {
     private WeakReference<SoundCloudMusicModel> musicModelWeakReference;
-    private Context context;
+    private final WeakReference<Context> context;
     public SoundCloudAsyncTask(SoundCloudMusicModel model,Context context){
         musicModelWeakReference = new WeakReference<>(model);
-        this.context = context;
+        this.context = new WeakReference<>(context);
+
     }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+    }
+
     @Override
     protected Void doInBackground(String... strings) {
         OkHttpClient client = new OkHttpClient();
@@ -85,7 +92,7 @@ public class SoundCloudAsyncTask extends AsyncTask<String,Void,Void> {
     @Override
     protected void onPostExecute(Void unused) {
         super.onPostExecute(unused);
-        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(context);
+        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(context.get());
         ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
         for(int i=musicModelWeakReference.get().getLastUpdateIndex();i<musicModelWeakReference.get().getLength();i++){
             MediaItem item = MediaItem.fromUri(musicModelWeakReference.get().getSoundcloudElement(i).getDownloadedUrl());
