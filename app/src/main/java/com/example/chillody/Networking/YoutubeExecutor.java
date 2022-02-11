@@ -84,6 +84,7 @@ public class YoutubeExecutor extends AndroidViewModel {
                     String songUrl;
 
                     Log.d("YouBug", "run: old number of element: "+ String.valueOf(youtubeMusicModelWeakReference.get().getLengthYoutubeList()));
+                    // Todo: Be quick to do the optimization and update the i<2 (we set i<2 in order to save the resource)
                     for(int i=youtubeMusicModelWeakReference.get().getLastUpdateIndex(); i<2; i++){
                         title = searchedSongsArray.getJSONObject(i).getString("title");
                         Log.d("YouBug", "run: "+ title);
