@@ -10,8 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+// Because our project depends on the API available on the Internet. Therefore, this model is
+// for the backup based on SoundCloud framework.
+// Our main project depends on the Youtube framework
 // using ViewModel combining with LiveData to retain the instance during the configuration change
-// and livedata for updating immediately the result.
 public class SoundCloudMusicModel extends AndroidViewModel {
     private final List<SoundCloudMusicElement> soundCloudMusicElementList;
     private final List<String> Playlist;

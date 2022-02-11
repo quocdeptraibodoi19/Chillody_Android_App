@@ -32,6 +32,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+// Because our project depends on the API available on the Internet. Therefore, this model is
+// for the backup based on SoundCloud framework.
+// Our main project depends on the Youtube framework
 public class SoundCloudExecutor extends AndroidViewModel {
     private ExecutorService executorService;
     private Application application;
