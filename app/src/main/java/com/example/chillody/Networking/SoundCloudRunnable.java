@@ -1,5 +1,6 @@
 package com.example.chillody.Networking;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -7,6 +8,7 @@ import android.os.Looper;
 import android.os.Message;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.DefaultLifecycleObserver;
 
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.SoundCloudMusicElement;
@@ -30,13 +32,12 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 // Todo: search for the use of WeakReference
-public class SoundCloudRunnable extends AsyncTask<String,Void,Void> {
+public class SoundCloudRunnable extends AsyncTask<String,Void,Void>{
     private WeakReference<SoundCloudMusicModel> musicModelWeakReference;
-    private final WeakReference<Context> context;
-    public SoundCloudRunnable(SoundCloudMusicModel model, Context context){
+    private final WeakReference<Application> context;
+    public SoundCloudRunnable(SoundCloudMusicModel model, Application context){
         musicModelWeakReference = new WeakReference<>(model);
         this.context = new WeakReference<>(context);
-
     }
 
     @Override

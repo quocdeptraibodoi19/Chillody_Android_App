@@ -13,21 +13,37 @@ import java.util.Objects;
 // using ViewModel combining with LiveData to retain the instance during the configuration change
 // and livedata for updating immediately the result.
 public class SoundCloudMusicModel extends AndroidViewModel {
-    private MutableLiveData<List<SoundCloudMusicElement>> soundCloudMusicElementList;
+    private final List<SoundCloudMusicElement> soundCloudMusicElementList;
+    private final List<String> Playlist;
+    private int curPlaylist;
     private int cur;
     private int lastUpdateIndex;
     public SoundCloudMusicModel(@NonNull Application application){
         super(application);
-        soundCloudMusicElementList = new MutableLiveData<>();
-        soundCloudMusicElementList.setValue(new ArrayList<>());
+        soundCloudMusicElementList = new ArrayList<>();
+        Playlist = new ArrayList<>();
+        curPlaylist = -1;
         cur = -1;
         lastUpdateIndex = -1;
     }
     public void addElement(SoundCloudMusicElement element){
-        List<SoundCloudMusicElement> MusicElementList = soundCloudMusicElementList.getValue();
-        MusicElementList.add(element);
-        soundCloudMusicElementList.setValue(MusicElementList);
+        soundCloudMusicElementList.add(element);
 
+    }
+    public int getLengthPlaylist(){
+        return Playlist.size();
+    }
+    public void AddPlaylist (String url){
+        Playlist.add(url);
+    }
+    public String getCurrentPlaylist(){
+        return Playlist.get(curPlaylist);
+    }
+    public void setCurPlaylist(int curPlaylist){
+        this.curPlaylist = curPlaylist;
+    }
+    public int getCurPlaylist(){
+        return curPlaylist;
     }
     public void setLastUpdateIndex(int index){
         lastUpdateIndex = index;
@@ -42,19 +58,19 @@ public class SoundCloudMusicModel extends AndroidViewModel {
         if(cur !=0) cur--;
     }
     public int getLength(){
-        return Objects.requireNonNull(soundCloudMusicElementList.getValue()).size();
+        return soundCloudMusicElementList.size();
     }
     public String getCurrentTitle(){
-        return Objects.requireNonNull(soundCloudMusicElementList.getValue()).get(cur).getTitle();
+        return soundCloudMusicElementList.get(cur).getTitle();
     }
     public String getNextTitle(){
-        return Objects.requireNonNull(soundCloudMusicElementList.getValue()).get(cur+1).getTitle();
+        return soundCloudMusicElementList.get(cur+1).getTitle();
     }
     public SoundCloudMusicElement getCurrentElement(){
-        return Objects.requireNonNull(soundCloudMusicElementList.getValue()).get(cur);
+        return soundCloudMusicElementList.get(cur);
     }
     public SoundCloudMusicElement getSoundcloudElement(int i){
-        return Objects.requireNonNull(soundCloudMusicElementList.getValue()).get(i);
+        return soundCloudMusicElementList.get(i);
     }
     public int getCur(){
         return cur;

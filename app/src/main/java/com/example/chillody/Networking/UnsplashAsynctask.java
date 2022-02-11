@@ -26,19 +26,19 @@ import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-public class UnsplashRunnable extends AsyncTask<Void,Void,String> {
-    private com.example.chillody.Model.UnsplashImgModel UnsplashImgModel;
-    private UnsplashImgAdapter unsplashImgAdapter;
+// Why you use AsyncTask here -> because the time it takes to get 10 urls of image from server
+// is not that long. Therefore, the whole process may take around 1 - 2s.
+// And because it's not that long. There are little chances for the memory leak to occur.
+public class UnsplashAsynctask extends AsyncTask<Void,Void,String> {
+    private final com.example.chillody.Model.UnsplashImgModel UnsplashImgModel;
+    private final WeakReference<UnsplashImgAdapter> unsplashImgAdapter;
     private String Query = "query=";
     private String Page = "page=";
-    private WeakReference<ProgressBar> progressBarWeakReference;
-    public UnsplashRunnable(ProgressBar progressBar, UnsplashImgAdapter adapter, UnsplashImgModel model, String Query, String Page){
+    public UnsplashAsynctask(UnsplashImgAdapter adapter, UnsplashImgModel model, String Query, String Page){
         this.UnsplashImgModel = model;
         this.Query += Query;
         this.Page += Page;
-        this.unsplashImgAdapter = adapter;
-        progressBarWeakReference = new WeakReference<>(progressBar);
+        this.unsplashImgAdapter = new WeakReference<>(adapter);
     }
     @Override
     protected String doInBackground(Void... voids) {
@@ -48,17 +48,18 @@ public class UnsplashRunnable extends AsyncTask<Void,Void,String> {
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
+            Log.d("Task", "doInBackground: Begin task");
             return Objects.requireNonNull(response.body()).string();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
-
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
         try {
+            Log.d("Task", "doInBackground: End task");
             Log.d("UnsplashResponse", "doInBackground: Body: "+s);
             JSONObject object = new JSONObject(s);
             JSONArray jsonArray = object.getJSONArray("results");
@@ -66,7 +67,8 @@ public class UnsplashRunnable extends AsyncTask<Void,Void,String> {
             for(int i =0 ; i< jsonArray.length();i++){
                 UnsplashImgModel.addElement(new UnsplashImgElement(jsonArray.getJSONObject(i)));
             }
-            unsplashImgAdapter.setElement(UnsplashImgModel.getCurrentElement());
+            if(unsplashImgAdapter.get() != null)
+            unsplashImgAdapter.get().setElement(UnsplashImgModel.getCurrentElement());
         } catch (JSONException e) {
             e.printStackTrace();
         }

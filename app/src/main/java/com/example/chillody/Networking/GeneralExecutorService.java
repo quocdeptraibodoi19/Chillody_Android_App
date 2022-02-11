@@ -4,6 +4,11 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ViewModel;
 
 import java.util.concurrent.Executor;
@@ -25,4 +30,6 @@ public class GeneralExecutorService extends AndroidViewModel {
     public ExecutorService getExecutorService(){
         return executorService;
     }
+
+
 }
