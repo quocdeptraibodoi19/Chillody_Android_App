@@ -22,9 +22,11 @@ import android.widget.ImageView;
 import com.example.chillody.Adapter.UnsplashImgAdapter;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.SoundCloudMusicModel;
+import com.example.chillody.Model.YoutubeMusicModel;
 import com.example.chillody.Networking.SoundCloudExecutor;
 import com.example.chillody.Networking.UnsplashAsynctask;
 import com.example.chillody.Model.UnsplashImgModel;
+import com.example.chillody.Networking.YoutubeExecutor;
 import com.example.chillody.databinding.MusicLayoutFragmentBinding;
 import com.github.ybq.android.spinkit.style.FoldingCube;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -36,8 +38,10 @@ import java.util.Objects;
 public class music_fragment extends Fragment {
     private MusicLayoutFragmentBinding binding;
     private UnsplashImgModel unsplashImgModel;
-    private SoundCloudMusicModel soundCloudMusicModel;
-    private SoundCloudExecutor soundCloudExecutor;
+   // private SoundCloudMusicModel soundCloudMusicModel;
+   // private SoundCloudExecutor soundCloudExecutor;
+    private YoutubeMusicModel youtubeMusicModel;
+    private YoutubeExecutor youtubeExecutor;
     private String page;
     private String ImgQuery;
     private String MusicQuery;
@@ -70,7 +74,7 @@ public class music_fragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        // Inflate the layout for this fragment!
         binding = MusicLayoutFragmentBinding.inflate(inflater,container,false);
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         exoPlayer = singletonExoPlayer.getExoPlayer();
@@ -86,17 +90,20 @@ public class music_fragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         unsplashImgModel = ViewModelProviders.of(this).get(UnsplashImgModel.class);
-        soundCloudMusicModel = ViewModelProviders.of(this).get(SoundCloudMusicModel.class);
-        soundCloudExecutor = ViewModelProviders.of(this).get(SoundCloudExecutor.class);
+       // soundCloudMusicModel = ViewModelProviders.of(this).get(SoundCloudMusicModel.class);
+        // soundCloudExecutor = ViewModelProviders.of(this).get(SoundCloudExecutor.class);
+        youtubeMusicModel = ViewModelProviders.of(this).get(YoutubeMusicModel.class);
+        youtubeExecutor = ViewModelProviders.of(this).get(YoutubeExecutor.class);
         binding.ProgressBarID.setIndeterminateDrawable(new FoldingCube());
         UnsplashImgAdapter unsplashImgAdapter = new UnsplashImgAdapter(binding.getRoot().getContext(),binding.ProgressBarID);
         binding.RecyclerImgViewID.setAdapter(unsplashImgAdapter);
         binding.RecyclerImgViewID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 
         // process the music:
-        if(soundCloudMusicModel.getLength()==0){
+        if(youtubeMusicModel.getLastUpdateIndex()==0 && !youtubeExecutor.isExecuting()){
             Log.d("QuocSoundcloud", "onViewCreated: ignite the Executor");
-            soundCloudExecutor.MusicProcess(MusicQuery,new WeakReference<>(soundCloudMusicModel));
+          //  soundCloudExecutor.MusicProcess(MusicQuery,new WeakReference<>(soundCloudMusicModel));
+            youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(binding.PlayerControlViewID));
         }
         // process the image:
         //Todo: Do optimization and cache the url of image in here to avoid the waste in API calls
@@ -154,6 +161,6 @@ public class music_fragment extends Fragment {
     public void onPause() {
         super.onPause();
         // stop working on the background to avoid the waste in used resource.
-        soundCloudExecutor.StopProcess();
+      //  soundCloudExecutor.StopProcess();
     }
 }
