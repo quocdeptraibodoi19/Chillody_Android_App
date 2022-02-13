@@ -72,7 +72,7 @@ public class music_fragment extends Fragment {
         }
     }
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment!
         binding = MusicLayoutFragmentBinding.inflate(inflater,container,false);
@@ -93,7 +93,7 @@ public class music_fragment extends Fragment {
        // soundCloudMusicModel = ViewModelProviders.of(this).get(SoundCloudMusicModel.class);
         // soundCloudExecutor = ViewModelProviders.of(this).get(SoundCloudExecutor.class);
         youtubeMusicModel = ViewModelProviders.of(this).get(YoutubeMusicModel.class);
-        youtubeExecutor = ViewModelProviders.of(this).get(YoutubeExecutor.class);
+        youtubeExecutor = new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication());
         binding.ProgressBarID.setIndeterminateDrawable(new FoldingCube());
         UnsplashImgAdapter unsplashImgAdapter = new UnsplashImgAdapter(binding.getRoot().getContext(),binding.ProgressBarID);
         binding.RecyclerImgViewID.setAdapter(unsplashImgAdapter);

@@ -31,7 +31,7 @@
         android:id="@+id/PlayerControlViewID"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="2dp"
         app:show_timeout="0"
         app:controller_layout_id="@layout/music_controller_layout"
         app:layout_constraintEnd_toEndOf="parent"

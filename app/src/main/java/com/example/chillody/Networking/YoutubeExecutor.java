@@ -34,12 +34,17 @@ import okhttp3.Response;
 
 //ToDo: Have to figure out the reason why the ControlView live when we backstack to access another category (the ExoPlayer live but there are no reasons why controlView lives)
 // Maybe because of using AndroidViewModel?
-public class YoutubeExecutor extends AndroidViewModel {
+// => In fact, when the configuration changes occur, the ControlView do be deleted =)) (I know the grammar is wrong but it's used to emphasize =)) )
+// When you backstack and open another category, the YoutubeExecutor is invoked again and it add songs to the exoplayer.
+// the exoplayer is singleton and it will live through the program.
+// and it can not play song because of the if condition ( if (!exoplauer.isplaying()....)).
+// Therefore, it is so amazing when applying singleton design pattern for the exoplayer in this case.
+public class YoutubeExecutor  {
     private final static int EXE_SONG_MESSAGE = 4124456;
     private final SingletonExoPlayer singletonExoPlayer;
     private ExecutorService executorService;
     public YoutubeExecutor(@NonNull Application application) {
-        super(application);
+//        super(application);
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
     }
     public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<StyledPlayerControlView> controlViewWeakReference){
@@ -97,7 +102,7 @@ public class YoutubeExecutor extends AndroidViewModel {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "6a655d9ce0msh5aba6c4c06f354cp11ae4djsn6e2e8d622ce6")
+                                .addHeader("x-rapidapi-key", "9cc64d0474msh584b3e43c37ff7fp157e00jsn1318969bb4a5")
                                 .build();
                          response = client.newCall(request).execute();
                          songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
