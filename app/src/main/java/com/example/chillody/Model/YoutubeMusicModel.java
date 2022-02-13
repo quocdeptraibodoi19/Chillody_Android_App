@@ -10,32 +10,32 @@ import java.util.List;
 
 public class YoutubeMusicModel extends AndroidViewModel {
     private final List<YoutubeMusicElement> youtubeMusicElementList;
-    private int curIndex;
     private int lastUpdateIndex;
+    // This element is used to mark if the MusicLayout successfully update the UI in the complete way.
+    private boolean isSuccesfulUpdateUI = false;
     public YoutubeMusicModel(@NonNull Application application) {
         super(application);
         youtubeMusicElementList = new ArrayList<>();
-        curIndex = -1;
         lastUpdateIndex = 0;
     }
     public void AddMusicElement(YoutubeMusicElement element){
         youtubeMusicElementList.add(element);
     }
-    public YoutubeMusicElement getCurrentMusicElement(){
-        return youtubeMusicElementList.get(curIndex);
+    // yes for successfully update the UI, and vice versa
+    public boolean isSuccesfulUpdateUI(){
+        return isSuccesfulUpdateUI;
+    }
+    // true for not update UI and false for having updated UI
+    public void setSuccesfulUpdateUI(boolean mark){
+        isSuccesfulUpdateUI = mark;
     }
     public YoutubeMusicElement getMusicElement(int index){
         return youtubeMusicElementList.get(index);
     }
-    public boolean isLastSongInList(){
+    public boolean isLastSongInList(int curIndex){
         return curIndex == youtubeMusicElementList.size() - 1;
     }
-    public void AddNext(){
-        curIndex++;
-    }
-    public void AddPrevious(){
-        curIndex--;
-    }
+
     public int getLastUpdateIndex(){
         return lastUpdateIndex;
     }

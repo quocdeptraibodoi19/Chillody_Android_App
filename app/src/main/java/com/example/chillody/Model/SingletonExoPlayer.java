@@ -19,4 +19,9 @@ public class SingletonExoPlayer {
     public ExoPlayer getExoPlayer() {
         return exoPlayer;
     }
+    public void EndMusic(){
+        if(exoPlayer.isCurrentMediaItemLive() && exoPlayer.isPlaying()){
+            exoPlayer.clearMediaItems();
+        }
+    }
 }

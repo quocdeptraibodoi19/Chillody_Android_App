@@ -4,10 +4,13 @@ import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.telephony.mbms.DownloadRequest;
 import android.util.Log;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 
 import com.example.chillody.Model.SingletonExoPlayer;
@@ -15,6 +18,8 @@ import com.example.chillody.Model.YoutubeMusicElement;
 import com.example.chillody.Model.YoutubeMusicModel;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.ui.StyledPlayerControlView;
 
 import org.json.JSONArray;
@@ -47,7 +52,7 @@ public class YoutubeExecutor  {
 //        super(application);
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
     }
-    public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<StyledPlayerControlView> controlViewWeakReference){
+    public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<StyledPlayerControlView> controlViewWeakReference, WeakReference<TextView>NextSongTitle){
         executorService = Executors.newFixedThreadPool(1);
         ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
         controlViewWeakReference.get().setPlayer(exoPlayer);
@@ -56,7 +61,17 @@ public class YoutubeExecutor  {
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if(msg.what == EXE_SONG_MESSAGE){
-                    MediaItem item = MediaItem.fromUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl());
+                  //  MediaItem item = MediaItem.fromUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl());
+                    MediaItem item = new MediaItem.Builder().setUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl())
+                            .setMediaId(String.valueOf(msg.arg1))
+                            .setTag(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getTitle()).build();
+                    if(youtubeMusicModelWeakReference.get()!=null)
+                        if(!youtubeMusicModelWeakReference.get().isSuccesfulUpdateUI())
+                        {
+                            youtubeMusicModelWeakReference.get().setSuccesfulUpdateUI(true);
+                            NextSongTitle.get().setText(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getTitle());
+                        }
+
                     exoPlayer.addMediaItem(item);
                     if (!exoPlayer.isPlaying() || !exoPlayer.isCurrentMediaItemLive()){
                         exoPlayer.prepare();
