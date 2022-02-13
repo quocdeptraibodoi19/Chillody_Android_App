@@ -117,7 +117,10 @@ public class music_fragment extends Fragment {
                         NextSongNameTextView.setText(youtubeMusicModel.getMusicElement(curIndex+1).getTitle());
                     }
                     else
+                    {
                         youtubeMusicModel.setSuccesfulUpdateUI(false);
+                        NextSongNameTextView.setText(R.string.loading);
+                    }
                 }
             }
         });
