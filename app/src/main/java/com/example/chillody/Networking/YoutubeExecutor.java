@@ -52,8 +52,10 @@ public class YoutubeExecutor  {
 //        super(application);
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
     }
-    public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<StyledPlayerControlView> controlViewWeakReference, WeakReference<TextView>NextSongTitle){
+    public void InitializeExecutor(){
         executorService = Executors.newFixedThreadPool(1);
+    }
+    public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<StyledPlayerControlView> controlViewWeakReference, WeakReference<TextView>NextSongTitle){
         ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
         controlViewWeakReference.get().setPlayer(exoPlayer);
         Handler handler = new Handler(Looper.getMainLooper()){
@@ -112,15 +114,17 @@ public class YoutubeExecutor  {
                         Log.d("YouBug", "run: "+ songId);
                         youtubeMusicModelWeakReference.get().AddMusicElement(new YoutubeMusicElement(title,songId));
                         // To get the mp4 form from the ID of the youtube ID
-                         client = new OkHttpClient();
-                         request = new Request.Builder()
-                                .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
+                        client = new OkHttpClient();
+
+                        request = new Request.Builder()
+                                .url("https://youtube-video-download-info.p.rapidapi.com/dl?id="+songId)
                                 .get()
-                                .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "9cc64d0474msh584b3e43c37ff7fp157e00jsn1318969bb4a5")
+                                .addHeader("x-rapidapi-host", "youtube-video-download-info.p.rapidapi.com")
+                                .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
                                 .build();
-                         response = client.newCall(request).execute();
-                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
+
+                        response = client.newCall(request).execute();
+                         songUrl = (String) new JSONObject(Objects.requireNonNull(response.body()).string()).getJSONObject("link").getJSONArray("134").get(0);
                          youtubeMusicModelWeakReference.get().getMusicElement(i).setDownloadedMusicUrl(songUrl);
                         Log.d("YouBug", "run: bug in the message");
                          Message message = new Message();

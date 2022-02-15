@@ -48,7 +48,6 @@ public class UnsplashAsynctask extends AsyncTask<Void,Void,String> {
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
-            Log.d("Task", "doInBackground: Begin task");
             return Objects.requireNonNull(response.body()).string();
         } catch (IOException e) {
             e.printStackTrace();
@@ -59,11 +58,8 @@ public class UnsplashAsynctask extends AsyncTask<Void,Void,String> {
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
         try {
-            Log.d("Task", "doInBackground: End task");
-            Log.d("UnsplashResponse", "doInBackground: Body: "+s);
             JSONObject object = new JSONObject(s);
             JSONArray jsonArray = object.getJSONArray("results");
-            Log.d("UnsplashNumber", "onPostExecute: "+ String.valueOf(jsonArray.length()));
             for(int i =0 ; i< jsonArray.length();i++){
                 UnsplashImgModel.addElement(new UnsplashImgElement(jsonArray.getJSONObject(i)));
             }

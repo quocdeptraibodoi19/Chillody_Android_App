@@ -1,6 +1,7 @@
 package com.example.chillody.Model;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -33,6 +34,7 @@ public class YoutubeMusicModel extends AndroidViewModel {
         return youtubeMusicElementList.get(index);
     }
     public boolean isLastSongInList(int curIndex){
+        Log.d("QuocBug", "isLastSongInList: "+String.valueOf(curIndex)+" - "+String.valueOf(youtubeMusicElementList.size()-1));
         return curIndex == youtubeMusicElementList.size() - 1;
     }
 

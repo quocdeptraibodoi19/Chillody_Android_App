@@ -31,7 +31,6 @@ import com.google.android.exoplayer2.Player;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
 
-
 public class music_fragment extends Fragment {
     private MusicLayoutFragmentBinding binding;
     private UnsplashImgModel unsplashImgModel;
@@ -42,16 +41,16 @@ public class music_fragment extends Fragment {
     private String page;
     private String ImgQuery;
     private String MusicQuery;
+    private String nameOfCategory;
     private TextView CurrentSongNameTextView, NextSongNameTextView;
     private final static String PAGE_MESSAGE = "Here is the page message";
     private final static String IMAGE_QUERY_MESSAGE = "Here is the image query message";
+    private Player.Listener listener;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String nameOfCategory = getArguments().getString("NameCategory");
+         nameOfCategory = getArguments().getString("NameCategory");
         page = "1";
-        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
-        singletonExoPlayer.EndMusic();
         switch (nameOfCategory){
             case "Chilling":
                 ImgQuery = "street night";
@@ -96,25 +95,45 @@ public class music_fragment extends Fragment {
         binding.RecyclerImgViewID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
         CurrentSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.musiclayouttitletrackID);
         NextSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.NextSongTitletrackID);
+        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
+
         // process the music:
         if(youtubeMusicModel.getLastUpdateIndex()==0 && !youtubeExecutor.isExecuting()){
             Log.d("QuocSoundcloud", "onViewCreated: ignite the Executor");
+            singletonExoPlayer.EndMusic();
+            singletonExoPlayer.setType(nameOfCategory);
           //  soundCloudExecutor.MusicProcess(MusicQuery,new WeakReference<>(soundCloudMusicModel));
+            youtubeExecutor.InitializeExecutor();
             youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(binding.PlayerControlViewID),new WeakReference<>(NextSongNameTextView));
         }
-        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
-
+        // TODO: When you finish the saving stuff, implement the bellow:
+//        else if(singletonExoPlayer.getType().equals(nameOfCategory)){
+//            Log.d("QuocSoundCloud", "onViewCreated: NOT ignite the Executor");
+//            MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+//            if(item != null && item.localConfiguration != null){
+//                String title = (String) item.localConfiguration.tag;
+//                CurrentSongNameTextView.setText(title);
+//            }
+//            binding.PlayerControlViewID.setPlayer(singletonExoPlayer.getExoPlayer());
+//        }
         // This is to add the listener to the singletonExoPlayer to update the UI depending on the MediaItem
-        singletonExoPlayer.getExoPlayer().addListener(new Player.Listener() {
+        // the reason why when you backstack and come to the the same layout , getting the title with no changes is that
+        // the current exoplayer does not clear the mediaList and the listener bellow isn't invoked
+         listener = new Player.Listener() {
             @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
+                Log.d("QuocBug", "onMediaItemTransition: In the Listener");
                 if(mediaItem != null && mediaItem.localConfiguration != null){
                     int curIndex = Integer.parseInt(mediaItem.mediaId);
                     String title = (String) mediaItem.localConfiguration.tag;
                     CurrentSongNameTextView.setText(title);
+                    Log.d("QuocBug", "onMediaItemTransition: title: "+ title);
                     if(!youtubeMusicModel.isLastSongInList(curIndex)){
                         youtubeMusicModel.setSuccesfulUpdateUI(true);
                         NextSongNameTextView.setText(youtubeMusicModel.getMusicElement(curIndex+1).getTitle());
+                        if(!youtubeExecutor.isExecuting()){
+                            //TODO: Please implement the feature to automatically load more songs into the list when user get to the end of the list
+                        }
                     }
                     else
                     {
@@ -123,18 +142,19 @@ public class music_fragment extends Fragment {
                     }
                 }
             }
-        });
+        };
+        singletonExoPlayer.getExoPlayer().addListener(listener);
+            // This is invoked when the exoplayer begin a new mediaitem.
+
         // process the image:
         //Todo: Do optimization and cache the url of image in here to avoid the waste in API calls
         // We can use SQlite or SharedReference to locally cache the Urls (cache the UnsplashModel)
 
         if(unsplashImgModel.getRemainedNumber() == 0){
-            Log.d("UnsplashImgModel_0", "onViewCreated: ONLY ONE ");
             binding.ProgressBarID.setVisibility(View.VISIBLE);
             new UnsplashAsynctask(unsplashImgAdapter,unsplashImgModel,ImgQuery,page).execute();
         }
         else{
-            Log.d("UnsplashImgModel_0", "onViewCreated: SECOND TWO ");
             unsplashImgAdapter.setElement(unsplashImgModel.getCurrentElement());
         }
 
@@ -177,9 +197,8 @@ public class music_fragment extends Fragment {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        // stop working on the background to avoid the waste in used resource.
-      //  soundCloudExecutor.StopProcess();
+    public void onDestroyView() {
+        super.onDestroyView();
+        SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
     }
 }
