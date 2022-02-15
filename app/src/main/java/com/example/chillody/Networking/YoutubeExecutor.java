@@ -66,7 +66,7 @@ public class YoutubeExecutor  {
                   //  MediaItem item = MediaItem.fromUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl());
                     MediaItem item = new MediaItem.Builder().setUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl())
                             .setMediaId(String.valueOf(msg.arg1))
-                            .setTag(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getTitle()).build();
+                            .setTag(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1)).build();
                     if(youtubeMusicModelWeakReference.get()!=null)
                         if(!youtubeMusicModelWeakReference.get().isSuccesfulUpdateUI())
                         {

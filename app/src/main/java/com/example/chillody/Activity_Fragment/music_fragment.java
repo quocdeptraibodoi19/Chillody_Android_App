@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.example.chillody.Adapter.UnsplashImgAdapter;
 import com.example.chillody.Model.SingletonExoPlayer;
+import com.example.chillody.Model.YoutubeMusicElement;
 import com.example.chillody.Model.YoutubeMusicModel;
 import com.example.chillody.Networking.UnsplashAsynctask;
 import com.example.chillody.Model.UnsplashImgModel;
@@ -125,9 +126,9 @@ public class music_fragment extends Fragment {
                 Log.d("QuocBug", "onMediaItemTransition: In the Listener");
                 if(mediaItem != null && mediaItem.localConfiguration != null){
                     int curIndex = Integer.parseInt(mediaItem.mediaId);
-                    String title = (String) mediaItem.localConfiguration.tag;
-                    CurrentSongNameTextView.setText(title);
-                    Log.d("QuocBug", "onMediaItemTransition: title: "+ title);
+                    YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
+                    CurrentSongNameTextView.setText(element.getTitle());
+                    Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
                     if(!youtubeMusicModel.isLastSongInList(curIndex)){
                         youtubeMusicModel.setSuccesfulUpdateUI(true);
                         NextSongNameTextView.setText(youtubeMusicModel.getMusicElement(curIndex+1).getTitle());
@@ -197,8 +198,9 @@ public class music_fragment extends Fragment {
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onPause() {
+        super.onPause();
         SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
     }
+
 }

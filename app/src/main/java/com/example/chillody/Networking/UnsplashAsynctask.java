@@ -57,6 +57,7 @@ public class UnsplashAsynctask extends AsyncTask<Void,Void,String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
+        if(s==null||s.equals("")) return;
         try {
             JSONObject object = new JSONObject(s);
             JSONArray jsonArray = object.getJSONArray("results");
