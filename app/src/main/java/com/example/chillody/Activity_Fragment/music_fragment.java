@@ -1,5 +1,7 @@
 package com.example.chillody.Activity_Fragment;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -26,17 +28,18 @@ import com.example.chillody.Networking.YoutubeExecutor;
 import com.example.chillody.R;
 import com.example.chillody.databinding.MusicLayoutFragmentBinding;
 import com.github.ybq.android.spinkit.style.FoldingCube;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 
 import java.lang.ref.WeakReference;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class music_fragment extends Fragment {
     private MusicLayoutFragmentBinding binding;
     private UnsplashImgModel unsplashImgModel;
-   // private SoundCloudMusicModel soundCloudMusicModel;
-   // private SoundCloudExecutor soundCloudExecutor;
     private YoutubeMusicModel youtubeMusicModel;
     private YoutubeExecutor youtubeExecutor;
     private String page;
@@ -47,10 +50,15 @@ public class music_fragment extends Fragment {
     private final static String PAGE_MESSAGE = "Here is the page message";
     private final static String IMAGE_QUERY_MESSAGE = "Here is the image query message";
     private Player.Listener listener;
+    private SharedPreferences sharedPreferences;
+    private Set<String> titleSet ;
+    private Set<String> urlSet ;
+    private Set<String> idSet ;
+    private int MediaItemPosition;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-         nameOfCategory = getArguments().getString("NameCategory");
+        nameOfCategory = getArguments().getString("NameCategory");
         page = "1";
         switch (nameOfCategory){
             case "Chilling":
@@ -74,6 +82,7 @@ public class music_fragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment!
         binding = MusicLayoutFragmentBinding.inflate(inflater,container,false);
+        sharedPreferences = binding.getRoot().getContext().getSharedPreferences(home_fragment.sharedFile+nameOfCategory, Context.MODE_PRIVATE);
         if(savedInstanceState != null)
         {
             page = savedInstanceState.getString(PAGE_MESSAGE);
@@ -86,8 +95,6 @@ public class music_fragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         unsplashImgModel = ViewModelProviders.of(this).get(UnsplashImgModel.class);
-       // soundCloudMusicModel = ViewModelProviders.of(this).get(SoundCloudMusicModel.class);
-        // soundCloudExecutor = ViewModelProviders.of(this).get(SoundCloudExecutor.class);
         youtubeMusicModel = ViewModelProviders.of(this).get(YoutubeMusicModel.class);
         youtubeExecutor = new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication());
         binding.ProgressBarID.setIndeterminateDrawable(new FoldingCube());
@@ -97,35 +104,82 @@ public class music_fragment extends Fragment {
         CurrentSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.musiclayouttitletrackID);
         NextSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.NextSongTitletrackID);
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
+        binding.PlayerControlViewID.setPlayer(singletonExoPlayer.getExoPlayer());
 
+        // pass data into the from the exoplayer into the view
+        // save the data and maintain the exoplayer
+        if(singletonExoPlayer.getType().equals(nameOfCategory)){
+            Log.d("QuocBug", "onViewCreated: same type");
+            YoutubeMusicElement currentElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
+            CurrentSongNameTextView.setText(currentElement.getTitle());
+            if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() + 1 < singletonExoPlayer.getExoPlayer().getMediaItemCount()){
+                currentElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getMediaItemAt(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex()+1).localConfiguration.tag;
+                NextSongNameTextView.setText(currentElement.getTitle());
+            }
+            youtubeMusicModel.setSuccesfulUpdateUI(true);
+            for(int i=0; i<singletonExoPlayer.getExoPlayer().getMediaItemCount();i++){
+                currentElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getMediaItemAt(i).localConfiguration).tag;
+                youtubeMusicModel.AddMusicElement(currentElement);
+            }
+            Log.d("QuocBug", "onViewCreated: the number of element in youtubeModel: "+ String.valueOf(youtubeMusicModel.getLengthYoutubeList()));
+            youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + singletonExoPlayer.getExoPlayer().getMediaItemCount());
+        }
+        else{
+            Log.d("QuocBug", "onViewCreated: NOT same type");
+            singletonExoPlayer.EndMusic();
+            singletonExoPlayer.setType(nameOfCategory);
+            titleSet = sharedPreferences.getStringSet(home_fragment.LAST_EXOTITLE_STATE,new LinkedHashSet<>());
+            urlSet = sharedPreferences.getStringSet(home_fragment.LAST_EXOURL_STATE,new LinkedHashSet<>());
+            idSet = sharedPreferences.getStringSet(home_fragment.LAST_EXOID_STATE,new LinkedHashSet<>());
+            MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
+            String[] titleStrings = new String[titleSet.size()];
+            String[] urlStrings = new String[urlSet.size()];
+            String[] idStrings = new String[idSet.size()];
+            titleStrings = titleSet.toArray(titleStrings);
+            urlStrings = urlSet.toArray(urlStrings);
+            idStrings = idSet.toArray(idStrings);
+            YoutubeMusicElement element;
+            for(int i=0; i<titleSet.size();i++){
+                element = new YoutubeMusicElement(titleStrings[i],idStrings[i],urlStrings[i]);
+                MediaItem mediaItem = new MediaItem.Builder()
+                        .setUri(urlStrings[i]).setTag(element)
+                        .build();
+                singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
+                singletonExoPlayer.getExoPlayer().prepare();
+                youtubeMusicModel.AddMusicElement(element);
+                if(i == MediaItemPosition){
+                    Log.d("QuocBug", "onViewCreated: in loop: "+ String.valueOf(MediaItemPosition));
+                    singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
+                    singletonExoPlayer.getExoPlayer().play();
+                    CurrentSongNameTextView.setText(element.getTitle());
+                }
+                else if(i == MediaItemPosition +1){
+                    Log.d("QuocBug", "onViewCreated: else in loop: "+ element.getTitle());
+                    NextSongNameTextView.setText(element.getTitle());
+                    youtubeMusicModel.setSuccesfulUpdateUI(true);
+                }
+            }
+            youtubeMusicModel.setSuccesfulUpdateUI(true);
+            youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + titleSet.size());
+        }
         // process the music:
         if(youtubeMusicModel.getLastUpdateIndex()==0 && !youtubeExecutor.isExecuting()){
             Log.d("QuocSoundcloud", "onViewCreated: ignite the Executor");
             singletonExoPlayer.EndMusic();
             singletonExoPlayer.setType(nameOfCategory);
-          //  soundCloudExecutor.MusicProcess(MusicQuery,new WeakReference<>(soundCloudMusicModel));
             youtubeExecutor.InitializeExecutor();
-            youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(binding.PlayerControlViewID),new WeakReference<>(NextSongNameTextView));
+            youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
         }
-        // TODO: When you finish the saving stuff, implement the bellow:
-//        else if(singletonExoPlayer.getType().equals(nameOfCategory)){
-//            Log.d("QuocSoundCloud", "onViewCreated: NOT ignite the Executor");
-//            MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
-//            if(item != null && item.localConfiguration != null){
-//                String title = (String) item.localConfiguration.tag;
-//                CurrentSongNameTextView.setText(title);
-//            }
-//            binding.PlayerControlViewID.setPlayer(singletonExoPlayer.getExoPlayer());
-//        }
+
         // This is to add the listener to the singletonExoPlayer to update the UI depending on the MediaItem
         // the reason why when you backstack and come to the the same layout , getting the title with no changes is that
         // the current exoplayer does not clear the mediaList and the listener bellow isn't invoked
          listener = new Player.Listener() {
-            @Override
+             @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
                 Log.d("QuocBug", "onMediaItemTransition: In the Listener");
                 if(mediaItem != null && mediaItem.localConfiguration != null){
-                    int curIndex = Integer.parseInt(mediaItem.mediaId);
+                    int curIndex = singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex();
                     YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
                     CurrentSongNameTextView.setText(element.getTitle());
                     Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
@@ -201,6 +255,24 @@ public class music_fragment extends Fragment {
     public void onPause() {
         super.onPause();
         SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        titleSet = new LinkedHashSet<>();
+        urlSet = new LinkedHashSet<>();
+        idSet = new LinkedHashSet<>();
+        ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
+        for(int i=0; i< exoPlayer.getMediaItemCount(); i++){
+            Log.d("QuocBug", "onPause: ");
+            YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(i).localConfiguration).tag;
+            titleSet.add(element.getTitle());
+            urlSet.add(element.getDownloadedMusicUrl());
+            idSet.add(element.getMusicID());
+        }
+        MediaItemPosition =exoPlayer.getCurrentMediaItemIndex();
+        editor.putInt(home_fragment.LAST_EXOPOSITEM_STATE,MediaItemPosition);
+        editor.putStringSet(home_fragment.LAST_EXOID_STATE,idSet);
+        editor.putStringSet(home_fragment.LAST_EXOTITLE_STATE,titleSet);
+        editor.putStringSet(home_fragment.LAST_EXOURL_STATE,urlSet);
+        editor.apply();
     }
 
 }

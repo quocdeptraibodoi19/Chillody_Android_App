@@ -32,12 +32,12 @@ import java.util.Objects;
 import java.util.Set;
 
 public class home_fragment extends Fragment {
-    public final String sharedFile ="com.example.chillody.Activity_Fragment";
-    public final String LAST_EXOTYPE_STATE = "NDQEXOPLAYERTYPE";
-    public final String LAST_EXOID_STATE = "NDQEXOPLAYERIDSTATE";
-    public final String LAST_EXOURL_STATE = "NDQEXOPLAYERURLSTATE";
-    public final String LAST_EXOTITLE_STATE = "NDQEXOPLAYERTITLESTATE";
-    public final String LAST_EXOPOSITEM_STATE = "NDQEXOPLAYERITEMPOSITIONSTATE";
+    public final static String sharedFile ="com.example.chillody.Activity_Fragment";
+    public final static String LAST_EXOTYPE_STATE = "NDQEXOPLAYERTYPE";
+    public final static String LAST_EXOID_STATE = "NDQEXOPLAYERIDSTATE";
+    public final static String LAST_EXOURL_STATE = "NDQEXOPLAYERURLSTATE";
+    public final static String LAST_EXOTITLE_STATE = "NDQEXOPLAYERTITLESTATE";
+    public final static String LAST_EXOPOSITEM_STATE = "NDQEXOPLAYERITEMPOSITIONSTATE";
     private SharedPreferences sharedPreferences;
     private final List<categoryObj> categoryObjList = new ArrayList<>();
     private HomeLayoutFragmentBinding binding;
@@ -73,6 +73,7 @@ public class home_fragment extends Fragment {
         titleStrings = titleSet.toArray(titleStrings);
         urlStrings = urlSet.toArray(urlStrings);
         idStrings = idSet.toArray(idStrings);
+        singletonExoPlayer.setType(exoPlayerType);
         for(int i=0; i<titleSet.size();i++){
             MediaItem mediaItem = new MediaItem.Builder()
                     .setUri(urlStrings[i]).setTag(new YoutubeMusicElement(titleStrings[i],idStrings[i],urlStrings[i]))

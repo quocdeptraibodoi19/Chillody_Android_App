@@ -55,9 +55,8 @@ public class YoutubeExecutor  {
     public void InitializeExecutor(){
         executorService = Executors.newFixedThreadPool(1);
     }
-    public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<StyledPlayerControlView> controlViewWeakReference, WeakReference<TextView>NextSongTitle){
+    public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<TextView>NextSongTitle){
         ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
-        controlViewWeakReference.get().setPlayer(exoPlayer);
         Handler handler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -65,7 +64,6 @@ public class YoutubeExecutor  {
                 if(msg.what == EXE_SONG_MESSAGE){
                   //  MediaItem item = MediaItem.fromUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl());
                     MediaItem item = new MediaItem.Builder().setUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl())
-                            .setMediaId(String.valueOf(msg.arg1))
                             .setTag(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1)).build();
                     if(youtubeMusicModelWeakReference.get()!=null)
                         if(!youtubeMusicModelWeakReference.get().isSuccesfulUpdateUI())
