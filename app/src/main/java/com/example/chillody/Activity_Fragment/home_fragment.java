@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -133,7 +134,8 @@ public class home_fragment extends Fragment {
        ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
        exoPlayerType = SingletonExoPlayer.getInstance(getActivity().getApplication()).getType();
        for(int i=0; i< exoPlayer.getMediaItemCount(); i++){
-            YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(i).localConfiguration).tag;
+           Log.d("QuocBug", "onPause: ");
+           YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(i).localConfiguration).tag;
             titleSet.add(element.getTitle());
             urlSet.add(element.getDownloadedMusicUrl());
             idSet.add(element.getMusicID());

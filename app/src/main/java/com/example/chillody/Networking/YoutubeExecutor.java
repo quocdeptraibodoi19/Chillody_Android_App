@@ -114,17 +114,16 @@ public class YoutubeExecutor  {
                         Log.d("YouBug", "run: "+ songId);
                         youtubeMusicModelWeakReference.get().AddMusicElement(new YoutubeMusicElement(title,songId));
                         // To get the mp4 form from the ID of the youtube ID
-                        client = new OkHttpClient();
-
-                        request = new Request.Builder()
-                                .url("https://youtube-video-download-info.p.rapidapi.com/dl?id="+songId)
+                         client = new OkHttpClient();
+                         request = new Request.Builder()
+                                .url("https://easy-youtube.p.rapidapi.com/video/source/video?videoId="+songId)
                                 .get()
-                                .addHeader("x-rapidapi-host", "youtube-video-download-info.p.rapidapi.com")
+                                .addHeader("x-rapidapi-host", "easy-youtube.p.rapidapi.com")
                                 .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
                                 .build();
 
-                        response = client.newCall(request).execute();
-                         songUrl = (String) new JSONObject(Objects.requireNonNull(response.body()).string()).getJSONObject("link").getJSONArray("134").get(0);
+                         response = client.newCall(request).execute();
+                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("video");
                          youtubeMusicModelWeakReference.get().getMusicElement(i).setDownloadedMusicUrl(songUrl);
                         Log.d("YouBug", "run: bug in the message");
                          Message message = new Message();
