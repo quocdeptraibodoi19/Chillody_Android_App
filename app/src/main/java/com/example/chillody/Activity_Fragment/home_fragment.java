@@ -62,27 +62,32 @@ public class home_fragment extends Fragment {
         categoryObjList.add(new categoryObj("Ghibli","https://studioghiblimovies.com/wp-content/uploads/2020/03/barcode-scanners-qr-code-2d-code-creative-barcode.jpg"));
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         // This is to load data from the Shared Reference into the ExoPlayer instance:
-        titleSet = sharedPreferences.getStringSet(LAST_EXOTITLE_STATE,new LinkedHashSet<>());
-        urlSet = sharedPreferences.getStringSet(LAST_EXOURL_STATE,new LinkedHashSet<>());
-        idSet = sharedPreferences.getStringSet(LAST_EXOID_STATE,new LinkedHashSet<>());
-        exoPlayerType = sharedPreferences.getString(LAST_EXOTYPE_STATE,"");
-        MediaItemPosition = sharedPreferences.getInt(LAST_EXOPOSITEM_STATE,0);
-        String[] titleStrings = new String[titleSet.size()];
-        String[] urlStrings = new String[urlSet.size()];
-        String[] idStrings = new String[idSet.size()];
-        titleStrings = titleSet.toArray(titleStrings);
-        urlStrings = urlSet.toArray(urlStrings);
-        idStrings = idSet.toArray(idStrings);
-        singletonExoPlayer.setType(exoPlayerType);
-        for(int i=0; i<titleSet.size();i++){
-            MediaItem mediaItem = new MediaItem.Builder()
-                    .setUri(urlStrings[i]).setTag(new YoutubeMusicElement(titleStrings[i],idStrings[i],urlStrings[i]))
-                    .build();
-            singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
+        // the if is to prevent the case when the configuration changes occur, the home_fragment recreate and it will automatically add data to the
+        // the current singleton exo ( which is still alive in spite of configuration changes)
+        if(singletonExoPlayer.getExoPlayer().getMediaItemCount() == 0)
+        {
+            titleSet = sharedPreferences.getStringSet(LAST_EXOTITLE_STATE,new LinkedHashSet<>());
+            urlSet = sharedPreferences.getStringSet(LAST_EXOURL_STATE,new LinkedHashSet<>());
+            idSet = sharedPreferences.getStringSet(LAST_EXOID_STATE,new LinkedHashSet<>());
+            exoPlayerType = sharedPreferences.getString(LAST_EXOTYPE_STATE,"");
+            MediaItemPosition = sharedPreferences.getInt(LAST_EXOPOSITEM_STATE,0);
+            String[] titleStrings = new String[titleSet.size()];
+            String[] urlStrings = new String[urlSet.size()];
+            String[] idStrings = new String[idSet.size()];
+            titleStrings = titleSet.toArray(titleStrings);
+            urlStrings = urlSet.toArray(urlStrings);
+            idStrings = idSet.toArray(idStrings);
+            singletonExoPlayer.setType(exoPlayerType);
+            for(int i=0; i<titleSet.size();i++){
+                MediaItem mediaItem = new MediaItem.Builder()
+                        .setUri(urlStrings[i]).setTag(new YoutubeMusicElement(titleStrings[i],idStrings[i],urlStrings[i]))
+                        .build();
+                singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
+            }
+            singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
+            singletonExoPlayer.getExoPlayer().prepare();
+            singletonExoPlayer.getExoPlayer().play();
         }
-        singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
-        singletonExoPlayer.getExoPlayer().prepare();
-        singletonExoPlayer.getExoPlayer().play();
     }
 
     @Override
@@ -104,7 +109,7 @@ public class home_fragment extends Fragment {
         titleTrackTextview = binding.styledPlayerControlView.findViewById(R.id.titletrackID);
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
-
+        Log.d("QuocBug", "onViewCreated: in the home_fragment of the onviewcreated");
         MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
         // This is to update the UI, sync the data of ExoPlayer of category fragment into this fragment
         if(item != null && item.localConfiguration != null){

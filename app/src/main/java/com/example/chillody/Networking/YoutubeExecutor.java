@@ -117,7 +117,7 @@ public class YoutubeExecutor  {
                                 .url("https://easy-youtube.p.rapidapi.com/video/source/video?videoId="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "easy-youtube.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
+                                .addHeader("x-rapidapi-key", "2347dba099msh0ada479f8c42f9dp144201jsn8fc8b09b17f7")
                                 .build();
 
                          response = client.newCall(request).execute();
