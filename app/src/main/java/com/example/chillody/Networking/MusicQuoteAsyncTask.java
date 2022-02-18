@@ -19,12 +19,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 // this is to update the Music Quote and its author for the layout.home layout fragment
-public class MusicQuoteRunnable extends AsyncTask<Void,Void,String> {
+public class MusicQuoteAsyncTask extends AsyncTask<Void,Void,String> {
     private final WeakReference<TextView> musicQuoteView;
     private final WeakReference<TextView> authormusicQuoteView;
     private ProgressDialog dialog;
     private  Context context;
-    public MusicQuoteRunnable(TextView musicView, TextView authorView, Context context){
+    public MusicQuoteAsyncTask(TextView musicView, TextView authorView, Context context){
         this.musicQuoteView = new WeakReference<>(musicView);
         this.authormusicQuoteView = new WeakReference<>(authorView);
         this.context = context;
@@ -54,7 +54,7 @@ public class MusicQuoteRunnable extends AsyncTask<Void,Void,String> {
             return Objects.requireNonNull(response.body()).string();
         } catch (IOException e) {
             e.printStackTrace();
-            Log.d("MusicQuoteRunnable", "doInBackground: Something related to response fails");
+            Log.d("MusicQuoteAsyncTask", "doInBackground: Something related to response fails");
         }
         return null;
     }

@@ -1,7 +1,6 @@
 package com.example.chillody.Model;
 
 import android.app.Application;
-import android.content.Context;
 import android.util.Log;
 
 import com.google.android.exoplayer2.ExoPlayer;
@@ -11,6 +10,7 @@ public class SingletonExoPlayer {
     private String type="";
     private final ExoPlayer exoPlayer;
     private static SingletonExoPlayer singletonExoPlayer = null;
+    private boolean isRecommenedProcessing = false;
     private SingletonExoPlayer(Application application){
         exoPlayer = new ExoPlayer.Builder(application).build();
     }
@@ -32,5 +32,11 @@ public class SingletonExoPlayer {
     }
     public String getType(){
         return this.type;
+    }
+    public void setRecommenedProcessing(boolean isStart){
+        isRecommenedProcessing = isStart;
+    }
+    public boolean isRecommenedProcessing() {
+        return isRecommenedProcessing;
     }
 }

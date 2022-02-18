@@ -85,7 +85,6 @@ public class music_fragment extends Fragment {
         {
             if(singletonExoPlayer.getType().equals(nameOfCategory)){
                 Log.d("QuocBug", "onViewCreated: same type");
-                singletonExoPlayer.getExoPlayer().play();
                 YoutubeMusicElement currentElement;
                 for(int i=0; i<singletonExoPlayer.getExoPlayer().getMediaItemCount();i++)
                     {
@@ -163,15 +162,18 @@ public class music_fragment extends Fragment {
             if(exoPlayer.getCurrentMediaItemIndex() + 1 < exoPlayer.getMediaItemCount()){
                 element = (YoutubeMusicElement) exoPlayer.getMediaItemAt(exoPlayer.getCurrentMediaItemIndex() +1).localConfiguration.tag;
                 NextSongNameTextView.setText(element.getTitle());
+                youtubeMusicModel.setSuccesfulUpdateUI(true);
             }
-            youtubeMusicModel.setSuccesfulUpdateUI(true);
+            else{
+                youtubeMusicModel.setSuccesfulUpdateUI(false);
+                youtubeExecutor.MusicRecommendingExecutor(new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
+            }
         }
         // process the music:
         if(youtubeMusicModel.getLengthYoutubeList()==0 && !youtubeExecutor.isExecuting()){
             Log.d("QuocSoundcloud", "onViewCreated: ignite the Executor");
             singletonExoPlayer.EndMusic();
             singletonExoPlayer.setType(nameOfCategory);
-            youtubeExecutor.InitializeExecutor();
             youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
         }
 
@@ -190,9 +192,7 @@ public class music_fragment extends Fragment {
                     if(!youtubeMusicModel.isLastSongInList(curIndex)){
                         youtubeMusicModel.setSuccesfulUpdateUI(true);
                         NextSongNameTextView.setText(youtubeMusicModel.getMusicElement(curIndex+1).getTitle());
-                        if(!youtubeExecutor.isExecuting()){
-                            //TODO: Please implement the feature to automatically load more songs into the list when user get to the end of the list
-                        }
+                        youtubeExecutor.MusicRecommendingExecutor(new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
                     }
                     else
                     {

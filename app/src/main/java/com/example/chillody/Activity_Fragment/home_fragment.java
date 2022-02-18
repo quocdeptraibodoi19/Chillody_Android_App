@@ -19,6 +19,7 @@ import com.example.chillody.Adapter.CategoryAdapter;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
 import com.example.chillody.Model.categoryObj;
+import com.example.chillody.Networking.YoutubeExecutor;
 import com.example.chillody.R;
 import com.example.chillody.databinding.HomeLayoutFragmentBinding;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -105,7 +106,7 @@ public class home_fragment extends Fragment {
         categoryAdapter.setCategoryObjList(categoryObjList);
         binding.recyclerView.setAdapter(categoryAdapter);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
-        //new MusicQuoteRunnable(binding.MusicQuoteID,binding.ArtistID,binding.getRoot().getContext()).execute();
+        //new MusicQuoteAsyncTask(binding.MusicQuoteID,binding.ArtistID,binding.getRoot().getContext()).execute();
         titleTrackTextview = binding.styledPlayerControlView.findViewById(R.id.titletrackID);
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
@@ -116,12 +117,20 @@ public class home_fragment extends Fragment {
             YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
             titleTrackTextview.setText(element.getTitle());
         }
+        if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
+            Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
+            new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(null,null);
+        }
         listener = new Player.Listener() {
             @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
                 if(mediaItem != null && mediaItem.localConfiguration != null){
                     YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
                     titleTrackTextview.setText(element.getTitle());
+                }
+                if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
+                    Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
+                    new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(null,null);
                 }
             }
         };
@@ -154,4 +163,5 @@ public class home_fragment extends Fragment {
        editor.putString(LAST_EXOTYPE_STATE,exoPlayerType);
        editor.apply();
     }
+
 }
