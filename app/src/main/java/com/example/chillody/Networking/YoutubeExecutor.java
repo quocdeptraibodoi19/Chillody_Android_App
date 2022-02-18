@@ -31,6 +31,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/*
+* Simple YouTube Search
+* Youtube Search
+* YouTube MP3
+* */
 //ToDo: Have to figure out the reason why the ControlView live when we backstack to access another category (the ExoPlayer live but there are no reasons why controlView lives)
 // Maybe because of using AndroidViewModel?
 // => In fact, when the configuration changes occur, the ControlView do be deleted =)) (I know the grammar is wrong but it's used to emphasize =)) )
@@ -97,23 +102,22 @@ public class YoutubeExecutor  {
 
                     Log.d("YouBug", "run: old number of element: "+ String.valueOf(youtubeMusicModelWeakReference.get().getLengthYoutubeList()));
                     // Todo: Be quick to do the optimization and update the i<2 (we set i<2 in order to save the resource)
-                    for(int i=youtubeMusicModelWeakReference.get().getLastUpdateIndex(); i<2; i++){
+                    for(int i=youtubeMusicModelWeakReference.get().getLastUpdateIndex(); i<youtubeMusicModelWeakReference.get().getLastUpdateIndex()+1; i++){
                         title = searchedSongsArray.getJSONObject(i - youtubeMusicModelWeakReference.get().getLastUpdateIndex()).getString("title");
                         Log.d("YouBug", "run: "+ title);
                         songId = searchedSongsArray.getJSONObject(i - youtubeMusicModelWeakReference.get().getLastUpdateIndex()).getString("id");
                         Log.d("YouBug", "run: "+ songId);
                         youtubeMusicModelWeakReference.get().AddMusicElement(new YoutubeMusicElement(title,songId));
                         // To get the mp4 form from the ID of the youtube ID
-                         client = new OkHttpClient();
-                         request = new Request.Builder()
-                                .url("https://easy-youtube.p.rapidapi.com/video/source/video?videoId="+songId)
+                        client = new OkHttpClient();
+                        request = new Request.Builder()
+                                .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
-                                .addHeader("x-rapidapi-host", "easy-youtube.p.rapidapi.com")
+                                .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
                                 .addHeader("x-rapidapi-key", "2347dba099msh0ada479f8c42f9dp144201jsn8fc8b09b17f7")
                                 .build();
-
-                         response = client.newCall(request).execute();
-                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("video");
+                        response = client.newCall(request).execute();
+                        songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
                          youtubeMusicModelWeakReference.get().getMusicElement(i).setDownloadedMusicUrl(songUrl);
                         Log.d("YouBug", "run: bug in the message");
                          Message message = new Message();
@@ -131,7 +135,7 @@ public class YoutubeExecutor  {
         executorService.shutdown();
         executorService = null;
     }
-    public void MusicRecommendingExecutor(WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<TextView>NextSongTitle){
+    public void MusicRecommendingExecutor(String lastSongID,WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<TextView>NextSongTitle){
         if(singletonExoPlayer.isRecommenedProcessing() && isExecuting()) return;
         Log.d("QuocMusic", "MusicRecommendingExecutor: Recommendation processing");
         executorService = Executors.newFixedThreadPool(1);
@@ -143,12 +147,12 @@ public class YoutubeExecutor  {
                 super.handleMessage(msg);
                 // bellow code is different from the above one because this function can ignite at the home_fragment whereas the youtubeMusicModelWeakReference can be null
                 if(msg.what == EXE_RECOMMEND_SONG_MESSAGE){
-                    String songID = msg.getData().getString("SongID");
+                    String SongID = msg.getData().getString("SongID");
                     String Title = msg.getData().getString("Title");
                     String DownloadedUrl = msg.getData().getString("DownloadedUrl");
 
                     MediaItem item = new MediaItem.Builder().setUri(DownloadedUrl)
-                            .setTag(new YoutubeMusicElement(Title,songID,DownloadedUrl)).build();
+                            .setTag(new YoutubeMusicElement(Title,SongID,DownloadedUrl)).build();
                     if(youtubeMusicModelWeakReference!=null)
                         if(!youtubeMusicModelWeakReference.get().isSuccesfulUpdateUI())
                         {
@@ -165,8 +169,6 @@ public class YoutubeExecutor  {
             }
         };
         int lastIndexOfSong = exoPlayer.getMediaItemCount();
-        YoutubeMusicElement LastElement = (YoutubeMusicElement) exoPlayer.getMediaItemAt(exoPlayer.getMediaItemCount()-1).localConfiguration.tag;
-        String lastSongID = LastElement.getMusicID();
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -186,7 +188,7 @@ public class YoutubeExecutor  {
                     String title;
                     String songId;
                     String songUrl;
-                    for(int i=lastIndexOfSong;i<lastIndexOfSong+3;i++){
+                    for(int i=lastIndexOfSong;i<lastIndexOfSong+4;i++){
                         title = SongArray.getJSONObject(i - lastIndexOfSong).getString("title");
                         songId = SongArray.getJSONObject(i - lastIndexOfSong).getString("video_id");
                         if(youtubeMusicModelWeakReference != null)
@@ -195,14 +197,13 @@ public class YoutubeExecutor  {
                         Log.d("QuocMusic", "run: the title is: "+ title);
                         client = new OkHttpClient();
                         request = new Request.Builder()
-                                .url("https://easy-youtube.p.rapidapi.com/video/source/video?videoId="+songId)
+                                .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
-                                .addHeader("x-rapidapi-host", "easy-youtube.p.rapidapi.com")
+                                .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
                                 .addHeader("x-rapidapi-key", "2347dba099msh0ada479f8c42f9dp144201jsn8fc8b09b17f7")
                                 .build();
-
                         response = client.newCall(request).execute();
-                        songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("video");
+                        songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
                         if(youtubeMusicModelWeakReference != null)
                             youtubeMusicModelWeakReference.get().getMusicElement(i).setDownloadedMusicUrl(songUrl);
                         Message message = new Message();

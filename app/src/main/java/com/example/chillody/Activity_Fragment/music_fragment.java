@@ -63,16 +63,16 @@ public class music_fragment extends Fragment {
         page = "1";
         switch (nameOfCategory){
             case "Chilling":
-                ImgQuery = "street night";
-                MusicQuery = "Indie VietNam";
+                ImgQuery = "sadness city";
+                MusicQuery = "Đến Cuối Cùng Lại Cô Đơn - Dickson";
                 break;
             case "Ghibli":
                 ImgQuery = "kyoto";
-                MusicQuery = "Ghibli Chill";
+                MusicQuery = "Studio Ghibli Emotional Melody : Cello Collection with Calcifer[作業用、睡眠用BGM、ジブリのチェロメドレー、吉卜力大提琴音樂集]";
                 break;
             case "Cafe":
                 ImgQuery = "cozy cafe";
-                MusicQuery = "An Coong - Piano Cover - Collection";
+                MusicQuery = "japanese night cafe vibes / a lofi hip hop mix ~ chill with taiki";
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + nameOfCategory);
@@ -166,9 +166,10 @@ public class music_fragment extends Fragment {
             }
             else{
                 youtubeMusicModel.setSuccesfulUpdateUI(false);
-                youtubeExecutor.MusicRecommendingExecutor(new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
+                youtubeExecutor.MusicRecommendingExecutor(element.getMusicID(),new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
             }
         }
+
         // process the music:
         if(youtubeMusicModel.getLengthYoutubeList()==0 && !youtubeExecutor.isExecuting()){
             Log.d("QuocSoundcloud", "onViewCreated: ignite the Executor");
@@ -176,12 +177,11 @@ public class music_fragment extends Fragment {
             singletonExoPlayer.setType(nameOfCategory);
             youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
         }
-
         // This is to add the listener to the singletonExoPlayer to update the UI depending on the MediaItem
         // the reason why when you backstack and come to the the same layout , getting the title with no changes is that
         // the current exoplayer does not clear the mediaList and the listener bellow isn't invoked
-         listener = new Player.Listener() {
-             @Override
+        listener = new Player.Listener() {
+            @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
                 Log.d("QuocBug", "onMediaItemTransition: In the Listener");
                 if(mediaItem != null && mediaItem.localConfiguration != null){
@@ -190,21 +190,23 @@ public class music_fragment extends Fragment {
                     CurrentSongNameTextView.setText(element.getTitle());
                     Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
                     if(!youtubeMusicModel.isLastSongInList(curIndex)){
+                        // this is NOT the last song in the list scope
                         youtubeMusicModel.setSuccesfulUpdateUI(true);
                         NextSongNameTextView.setText(youtubeMusicModel.getMusicElement(curIndex+1).getTitle());
-                        youtubeExecutor.MusicRecommendingExecutor(new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
                     }
                     else
                     {
+                        // this is the last song in the list scope
                         youtubeMusicModel.setSuccesfulUpdateUI(false);
                         NextSongNameTextView.setText(R.string.loading);
+                        youtubeExecutor.MusicRecommendingExecutor(element.getMusicID(),new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
+
                     }
                 }
             }
         };
         singletonExoPlayer.getExoPlayer().addListener(listener);
-            // This is invoked when the exoplayer begin a new mediaitem.
-
+        // This is invoked when the exoplayer begin a new mediaitem.
         // process the image:
         //Todo: Do optimization and cache the url of image in here to avoid the waste in API calls
         // We can use SQlite or SharedReference to locally cache the Urls (cache the UnsplashModel)

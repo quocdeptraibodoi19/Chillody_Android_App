@@ -119,7 +119,8 @@ public class home_fragment extends Fragment {
         }
         if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
             Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
-            new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(null,null);
+            YoutubeMusicElement LastElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
+            new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
         }
         listener = new Player.Listener() {
             @Override
@@ -130,7 +131,8 @@ public class home_fragment extends Fragment {
                 }
                 if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
                     Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
-                    new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(null,null);
+                    YoutubeMusicElement LastElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
+                    new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
                 }
             }
         };
