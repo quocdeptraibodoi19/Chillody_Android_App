@@ -35,6 +35,7 @@ import okhttp3.Response;
 * Simple YouTube Search
 * Youtube Search
 * YouTube MP3
+* https://rapidapi.com/ytjar/api/youtube-mp36/
 * */
 //ToDo: Have to figure out the reason why the ControlView live when we backstack to access another category (the ExoPlayer live but there are no reasons why controlView lives)
 // Maybe because of using AndroidViewModel?
@@ -102,7 +103,7 @@ public class YoutubeExecutor  {
 
                     Log.d("YouBug", "run: old number of element: "+ String.valueOf(youtubeMusicModelWeakReference.get().getLengthYoutubeList()));
                     // Todo: Be quick to do the optimization and update the i<2 (we set i<2 in order to save the resource)
-                    for(int i=youtubeMusicModelWeakReference.get().getLastUpdateIndex(); i<youtubeMusicModelWeakReference.get().getLastUpdateIndex()+1; i++){
+                    for(int i=youtubeMusicModelWeakReference.get().getLastUpdateIndex(); i<youtubeMusicModelWeakReference.get().getLastUpdateIndex()+2; i++){
                         title = searchedSongsArray.getJSONObject(i - youtubeMusicModelWeakReference.get().getLastUpdateIndex()).getString("title");
                         Log.d("YouBug", "run: "+ title);
                         songId = searchedSongsArray.getJSONObject(i - youtubeMusicModelWeakReference.get().getLastUpdateIndex()).getString("id");
@@ -114,7 +115,7 @@ public class YoutubeExecutor  {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "2347dba099msh0ada479f8c42f9dp144201jsn8fc8b09b17f7")
+                                .addHeader("x-rapidapi-key", "81851a88camsh166337f6f3bcee2p16c514jsn5a6266161150")
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
@@ -136,7 +137,7 @@ public class YoutubeExecutor  {
         executorService = null;
     }
     public void MusicRecommendingExecutor(String lastSongID,WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<TextView>NextSongTitle){
-        if(singletonExoPlayer.isRecommenedProcessing() && isExecuting()) return;
+        if(singletonExoPlayer.isRecommenedProcessing() || isExecuting()) return;
         Log.d("QuocMusic", "MusicRecommendingExecutor: Recommendation processing");
         executorService = Executors.newFixedThreadPool(1);
         singletonExoPlayer.setRecommenedProcessing(true);
@@ -157,7 +158,7 @@ public class YoutubeExecutor  {
                         if(!youtubeMusicModelWeakReference.get().isSuccesfulUpdateUI())
                         {
                             youtubeMusicModelWeakReference.get().setSuccesfulUpdateUI(true);
-                            NextSongTitle.get().setText(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getTitle());
+                            NextSongTitle.get().setText(Title);
                         }
 
                     exoPlayer.addMediaItem(item);
@@ -172,7 +173,7 @@ public class YoutubeExecutor  {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
-                Log.d("QuocMusic", "run: in the executor");
+                Log.d("QuocMusic", "run: in the executor: "+ String.valueOf(lastIndexOfSong));
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
                         .url("https://youtube-search6.p.rapidapi.com/video/recommendation/?videoId="+lastSongID)
@@ -188,6 +189,7 @@ public class YoutubeExecutor  {
                     String title;
                     String songId;
                     String songUrl;
+                    Bundle bundle = new Bundle();
                     for(int i=lastIndexOfSong;i<lastIndexOfSong+4;i++){
                         title = SongArray.getJSONObject(i - lastIndexOfSong).getString("title");
                         songId = SongArray.getJSONObject(i - lastIndexOfSong).getString("video_id");
@@ -200,7 +202,7 @@ public class YoutubeExecutor  {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "2347dba099msh0ada479f8c42f9dp144201jsn8fc8b09b17f7")
+                                .addHeader("x-rapidapi-key", "81851a88camsh166337f6f3bcee2p16c514jsn5a6266161150")
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
@@ -208,7 +210,6 @@ public class YoutubeExecutor  {
                             youtubeMusicModelWeakReference.get().getMusicElement(i).setDownloadedMusicUrl(songUrl);
                         Message message = new Message();
                         message.what = EXE_RECOMMEND_SONG_MESSAGE;
-                        Bundle bundle = new Bundle();
                         bundle.putString("Title",title);
                         bundle.putString("SongID",songId);
                         bundle.putString("DownloadedUrl",songUrl);

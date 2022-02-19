@@ -31,6 +31,10 @@ import com.github.ybq.android.spinkit.style.FoldingCube;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
+import com.squareup.moshi.Json;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.lang.ref.WeakReference;
 import java.util.LinkedHashSet;
@@ -51,9 +55,6 @@ public class music_fragment extends Fragment {
     private final static String IMAGE_QUERY_MESSAGE = "Here is the image query message";
     private Player.Listener listener;
     private SharedPreferences sharedPreferences;
-    private Set<String> titleSet ;
-    private Set<String> urlSet ;
-    private Set<String> idSet ;
     private int MediaItemPosition;
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -97,32 +98,37 @@ public class music_fragment extends Fragment {
                 Log.d("QuocBug", "onViewCreated: NOT same type");
                 singletonExoPlayer.EndMusic();
                 singletonExoPlayer.setType(nameOfCategory);
-                titleSet = sharedPreferences.getStringSet(home_fragment.LAST_EXOTITLE_STATE,new LinkedHashSet<>());
-                urlSet = sharedPreferences.getStringSet(home_fragment.LAST_EXOURL_STATE,new LinkedHashSet<>());
-                idSet = sharedPreferences.getStringSet(home_fragment.LAST_EXOID_STATE,new LinkedHashSet<>());
-                MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
-                String[] titleStrings = new String[titleSet.size()];
-                String[] urlStrings = new String[urlSet.size()];
-                String[] idStrings = new String[idSet.size()];
-                titleStrings = titleSet.toArray(titleStrings);
-                urlStrings = urlSet.toArray(urlStrings);
-                idStrings = idSet.toArray(idStrings);
-                YoutubeMusicElement element;
-                for(int i=0; i<titleSet.size();i++){
-                    element = new YoutubeMusicElement(titleStrings[i],idStrings[i],urlStrings[i]);
-                    MediaItem mediaItem = new MediaItem.Builder()
-                            .setUri(urlStrings[i]).setTag(element)
-                            .build();
-                    singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
-                    singletonExoPlayer.getExoPlayer().prepare();
-                    youtubeMusicModel.AddMusicElement(element);
-                    if(i == MediaItemPosition){
-                        Log.d("QuocBug", "onViewCreated: in loop: "+ String.valueOf(MediaItemPosition));
-                        singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
-                        singletonExoPlayer.getExoPlayer().play();
+                JSONArray titleArray = null;
+                JSONArray urlArray = null;
+                JSONArray idArray = null;
+                try {
+                    titleArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOTITLE_STATE,"[]"));
+                    urlArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOURL_STATE,"[]"));
+                    idArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOID_STATE,"[]"));
+                    MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
+                    int length = Math.min(titleArray.length(),Math.min(urlArray.length(),idArray.length()));
+                    YoutubeMusicElement element;
+                    for(int i = 0; i< length; i++){
+                        if(titleArray.getString(i).equals("") || urlArray.getString(i).equals("") || idArray.getString(i).equals("")) continue;
+                        element = new YoutubeMusicElement(titleArray.getString(i),idArray.getString(i),urlArray.getString(i));
+                        MediaItem mediaItem = new MediaItem.Builder()
+                                .setUri(urlArray.getString(i)).setTag(element)
+                                .build();
+                        singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
+                        singletonExoPlayer.getExoPlayer().prepare();
+                        youtubeMusicModel.AddMusicElement(element);
+                        if(i == MediaItemPosition){
+                            Log.d("QuocBug", "onViewCreated: in loop: "+ String.valueOf(MediaItemPosition));
+                            singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
+                        }
+                        else if(i == MediaItemPosition + 1)
+                            singletonExoPlayer.getExoPlayer().play();
                     }
+                    singletonExoPlayer.getExoPlayer().play();
+                    youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + titleArray.length());
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + titleSet.size());
             }
         }
     }
@@ -262,9 +268,9 @@ public class music_fragment extends Fragment {
         super.onPause();
         SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        titleSet = new LinkedHashSet<>();
-        urlSet = new LinkedHashSet<>();
-        idSet = new LinkedHashSet<>();
+        Set<String> titleSet = new LinkedHashSet<>();
+        Set<String> urlSet = new LinkedHashSet<>();
+        Set<String> idSet = new LinkedHashSet<>();
         ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
         for(int i=0; i< exoPlayer.getMediaItemCount(); i++){
             Log.d("QuocBug", "onPause: ");
@@ -275,10 +281,11 @@ public class music_fragment extends Fragment {
         }
         MediaItemPosition =exoPlayer.getCurrentMediaItemIndex();
         editor.putInt(home_fragment.LAST_EXOPOSITEM_STATE,MediaItemPosition);
-        editor.putStringSet(home_fragment.LAST_EXOID_STATE,idSet);
-        editor.putStringSet(home_fragment.LAST_EXOTITLE_STATE,titleSet);
-        editor.putStringSet(home_fragment.LAST_EXOURL_STATE,urlSet);
+        editor.putString(home_fragment.LAST_EXOTITLE_STATE,new JSONArray(titleSet).toString());
+        editor.putString(home_fragment.LAST_EXOURL_STATE,new JSONArray(urlSet).toString());
+        editor.putString(home_fragment.LAST_EXOID_STATE, new JSONArray(idSet).toString());
         editor.apply();
+
     }
 
 }
