@@ -42,6 +42,8 @@ public class UnsplashImgAdapter extends RecyclerView.Adapter<UnsplashImgAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull UnsplashImgViewHolder holder, int position) {
+        // this is just for a while until finishing the Favorite section Logic:
+        holder.WhiteHeartIcon.setVisibility(View.INVISIBLE);
         if(element != null){
             Glide.with(context)
                     .load(element.getRegularURL())
@@ -55,6 +57,7 @@ public class UnsplashImgAdapter extends RecyclerView.Adapter<UnsplashImgAdapter.
                         @Override
                         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                             progressBarWeakReference.get().setVisibility(View.INVISIBLE);
+                            holder.WhiteHeartIcon.setVisibility(View.VISIBLE);
                             return false;
                         }
                     })
@@ -72,11 +75,14 @@ public class UnsplashImgAdapter extends RecyclerView.Adapter<UnsplashImgAdapter.
         notifyDataSetChanged();
     }
     protected class UnsplashImgViewHolder extends RecyclerView.ViewHolder{
-        private ImageView UnsplashImage;
+        private final ImageView UnsplashImage;
+        private final ImageView WhiteHeartIcon;
+        private ImageView RedHeartIcon;
         public UnsplashImgViewHolder(@NonNull View itemView) {
             super(itemView);
             UnsplashImage = itemView.findViewById(R.id.unsplashIMGID);
-
+            WhiteHeartIcon = itemView.findViewById(R.id.WhiteHeartIconID);
+            RedHeartIcon = itemView.findViewById(R.id.RedHeartIconID);
         }
     }
 }
