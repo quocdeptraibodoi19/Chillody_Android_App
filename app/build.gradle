@@ -32,7 +32,13 @@ android {
 
 dependencies {
     // this is for the style of progress bar:
-
+    implementation 'androidx.room:room-runtime:2.4.1'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    annotationProcessor 'androidx.room:room-compiler:2.4.1'
+    androidTestImplementation 'androidx.room:room-testing:2.4.1'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.4.1'
     implementation "android.arch.lifecycle:extensions:1.1.1"
     implementation "android.arch.lifecycle:viewmodel:1.1.1"
     implementation 'com.github.ybq:Android-SpinKit:1.4.0'
