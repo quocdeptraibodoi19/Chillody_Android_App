@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.chillody.Adapter.UnsplashImgAdapter;
 import com.example.chillody.Model.SingletonExoPlayer;
@@ -30,7 +31,10 @@ import com.example.chillody.databinding.MusicLayoutFragmentBinding;
 import com.github.ybq.android.spinkit.style.FoldingCube;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.upstream.DataSpec;
+import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.squareup.moshi.Json;
 
 import org.json.JSONArray;
@@ -56,6 +60,7 @@ public class music_fragment extends Fragment {
     private Player.Listener listener;
     private SharedPreferences sharedPreferences;
     private int MediaItemPosition;
+    private boolean isHappenBefore = false;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -166,7 +171,7 @@ public class music_fragment extends Fragment {
             YoutubeMusicElement element = (YoutubeMusicElement) exoPlayer.getCurrentMediaItem().localConfiguration.tag;
             CurrentSongNameTextView.setText(element.getTitle());
             if(exoPlayer.getCurrentMediaItemIndex() + 1 < exoPlayer.getMediaItemCount()){
-                element = (YoutubeMusicElement) exoPlayer.getMediaItemAt(exoPlayer.getCurrentMediaItemIndex() +1).localConfiguration.tag;
+                element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(exoPlayer.getCurrentMediaItemIndex() + 1).localConfiguration).tag;
                 NextSongNameTextView.setText(element.getTitle());
                 youtubeMusicModel.setSuccesfulUpdateUI(true);
             }
@@ -188,14 +193,38 @@ public class music_fragment extends Fragment {
         // the current exoplayer does not clear the mediaList and the listener bellow isn't invoked
         listener = new Player.Listener() {
             @Override
+            public void onPlayerError(@NonNull PlaybackException error) {
+             // error occurs
+                Throwable cause = error.getCause();
+                if (cause instanceof HttpDataSource.HttpDataSourceException) {
+                    HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
+                    if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
+                        Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
+                        Log.d("QuocBug", "onPlayerError: the link is error");
+                        singletonExoPlayer.EndMusic();
+                        youtubeMusicModel.ResetModel();
+                        youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
+                    }
+                }
+            }
+            @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
                 Log.d("QuocBug", "onMediaItemTransition: In the Listener");
                 if(mediaItem != null && mediaItem.localConfiguration != null){
                     int curIndex = singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex();
                     YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
+                    if(curIndex == youtubeMusicModel.getLengthYoutubeList())
+                    {
+                        youtubeMusicModel.AddMusicElement(element);
+                        // The youtubeExecutor should have been designed as a singleton. I'm too lazy to repair it now because it affects the whole project =((((
+                        // the bellow is the slight hack to fix the bug =(( But it's not an optimized approach to fix it.
+                        // TODO: Change the YoutubeExecutor into the singleton if you can in the future.
+                        if(curIndex +1 < singletonExoPlayer.getExoPlayer().getMediaItemCount())
+                            youtubeMusicModel.AddMusicElement((YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getMediaItemAt(curIndex+1).localConfiguration.tag);
+                    }
                     CurrentSongNameTextView.setText(element.getTitle());
                     Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
-                    if(!youtubeMusicModel.isLastSongInList(curIndex)){
+                    if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() < singletonExoPlayer.getExoPlayer().getMediaItemCount() -1){
                         // this is NOT the last song in the list scope
                         youtubeMusicModel.setSuccesfulUpdateUI(true);
                         NextSongNameTextView.setText(youtubeMusicModel.getMusicElement(curIndex+1).getTitle());
@@ -288,4 +317,69 @@ public class music_fragment extends Fragment {
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(isHappenBefore){
+            Log.d("QuocBug", "onResume: The current length of the YoutubeModel: " + String.valueOf(youtubeMusicModel.getLengthYoutubeList()));
+            SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
+            MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+            if(item != null && item.localConfiguration != null)
+            {
+                YoutubeMusicElement currentElement = (YoutubeMusicElement) item.localConfiguration.tag;
+                CurrentSongNameTextView.setText(currentElement.getTitle());
+            }
+            binding.PlayerControlViewID.setPlayer(singletonExoPlayer.getExoPlayer());
+            listener = new Player.Listener() {
+                @Override
+                public void onPlayerError(@NonNull PlaybackException error) {
+                    // error occurs
+                    Throwable cause = error.getCause();
+                    if (cause instanceof HttpDataSource.HttpDataSourceException) {
+                        HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
+                        if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
+                            Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
+                            Log.d("QuocBug", "onPlayerError: the link is error");
+                            singletonExoPlayer.EndMusic();
+
+                        }
+                    }
+                }
+                @Override
+                public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
+                    Log.d("QuocBug", "onMediaItemTransition: In the Listener");
+                    if(mediaItem != null && mediaItem.localConfiguration != null){
+                        int curIndex = singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex();
+                        YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
+                        if(curIndex == youtubeMusicModel.getLengthYoutubeList())
+                        {
+                            youtubeMusicModel.AddMusicElement(element);
+                            // The youtubeExecutor should have been designed as a singleton. I'm too lazy to repair it now because it affects the whole project =((((
+                            // the bellow is the slight hack to fix the bug =(( But it's not an optimized approach to fix it.
+                            // TODO: Change the YoutubeExecutor into the singleton if you can in the future.
+                            if(curIndex +1 < singletonExoPlayer.getExoPlayer().getMediaItemCount())
+                                youtubeMusicModel.AddMusicElement((YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getMediaItemAt(curIndex+1).localConfiguration.tag);
+                        }
+                        CurrentSongNameTextView.setText(element.getTitle());
+                        Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
+                        if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() < singletonExoPlayer.getExoPlayer().getMediaItemCount() -1){
+                            // this is NOT the last song in the list scope
+                            youtubeMusicModel.setSuccesfulUpdateUI(true);
+                            NextSongNameTextView.setText(youtubeMusicModel.getMusicElement(curIndex+1).getTitle());
+                        }
+                        else
+                        {
+                            // this is the last song in the list scope
+                            youtubeMusicModel.setSuccesfulUpdateUI(false);
+                            NextSongNameTextView.setText(R.string.loading);
+                            youtubeExecutor.MusicRecommendingExecutor(element.getMusicID(),new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
+
+                        }
+                    }
+                }
+            };
+            singletonExoPlayer.getExoPlayer().addListener(listener);
+        }
+        isHappenBefore = true;
+    }
 }

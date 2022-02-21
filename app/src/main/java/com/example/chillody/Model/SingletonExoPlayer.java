@@ -10,7 +10,7 @@ public class SingletonExoPlayer {
     private String type="";
     private final ExoPlayer exoPlayer;
     private static SingletonExoPlayer singletonExoPlayer = null;
-    private boolean isRecommenedProcessing = false;
+    private boolean isThreadProcessing = false;
     private SingletonExoPlayer(Application application){
         exoPlayer = new ExoPlayer.Builder(application).build();
     }
@@ -33,10 +33,10 @@ public class SingletonExoPlayer {
     public String getType(){
         return this.type;
     }
-    public void setRecommenedProcessing(boolean isStart){
-        isRecommenedProcessing = isStart;
+    public void setThreadProcessing(boolean isStart){
+        isThreadProcessing = isStart;
     }
-    public boolean isRecommenedProcessing() {
-        return isRecommenedProcessing;
+    public boolean isThreadProcessing() {
+        return isThreadProcessing;
     }
 }

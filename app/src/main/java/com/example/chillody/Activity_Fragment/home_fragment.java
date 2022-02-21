@@ -2,7 +2,6 @@ package com.example.chillody.Activity_Fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,12 +9,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import android.util.JsonWriter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.chillody.Adapter.CategoryAdapter;
 import com.example.chillody.Model.SingletonExoPlayer;
@@ -26,12 +25,14 @@ import com.example.chillody.R;
 import com.example.chillody.databinding.HomeLayoutFragmentBinding;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.upstream.HttpDataSource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -52,7 +53,7 @@ public class home_fragment extends Fragment {
     private Player.Listener listener;
     private String exoPlayerType;
     private int MediaItemPosition;
-
+    private boolean isHappenBefore = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,17 +83,28 @@ public class home_fragment extends Fragment {
                 singletonExoPlayer.setType(exoPlayerType);
                 Log.d("QuocBug", "onCreate: size of array"+String.valueOf(titleSet.length()));
                 for(int i=0; i<length;i++){
-                    if(titleSet.getString(i).equals("") || urlSet.getString(i).equals("") || idSet.getString(i).equals("")) continue;
+                    if(titleSet.getString(i).equals("") || urlSet.getString(i).equals("") || idSet.getString(i).equals(""))
+                    {
+                        if(i == MediaItemPosition) MediaItemPosition = 0;
+                        continue;
+                    }
                     Log.d("QuocBug", "onCreate: The title: "+titleSet.getString(i));
                     Log.d("QuocBug", "onCreate: the url: "+ urlSet.getString(i));
                     MediaItem mediaItem = new MediaItem.Builder()
                             .setUri(urlSet.getString(i)).setTag(new YoutubeMusicElement(titleSet.getString(i), idSet.getString(i), urlSet.getString(i)))
                             .build();
                     singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
+                    if(MediaItemPosition == i) {
+                        MediaItemPosition = singletonExoPlayer.getExoPlayer().getMediaItemCount()-1;
+                    }
                 }
-                singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
-                singletonExoPlayer.getExoPlayer().prepare();
-                singletonExoPlayer.getExoPlayer().play();
+                if(singletonExoPlayer.getExoPlayer().getMediaItemCount() !=0)
+                {
+                    Log.d("QuocBug", "onCreate: MediaItemPosition");
+                    singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
+                    singletonExoPlayer.getExoPlayer().prepare();
+                    singletonExoPlayer.getExoPlayer().play();
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -121,11 +133,11 @@ public class home_fragment extends Fragment {
         Log.d("QuocBug", "onViewCreated: in the home_fragment of the onviewcreated");
         MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
         // This is to update the UI, sync the data of ExoPlayer of category fragment into this fragment
-        if(item != null && item.localConfiguration != null){
+        if(item != null && item.localConfiguration != null && !singletonExoPlayer.isThreadProcessing()){
             YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
             titleTrackTextview.setText(element.getTitle());
         }
-        if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
+        if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1 && !singletonExoPlayer.isThreadProcessing()){
             Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
             YoutubeMusicElement LastElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
             new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
@@ -139,6 +151,9 @@ public class home_fragment extends Fragment {
                 }
                 if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
                     Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
+                    if(singletonExoPlayer.isThreadProcessing())
+                    Log.d("QuocBug", "onMediaItemTransition: True");
+                    else Log.d("QuocBug", "onMediaItemTransition: False");
                     YoutubeMusicElement LastElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
                     new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
                 }
@@ -177,4 +192,62 @@ public class home_fragment extends Fragment {
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(isHappenBefore){
+              SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
+              binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
+              MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+              if(item != null && item.localConfiguration != null)
+              {
+                  YoutubeMusicElement currentElement = (YoutubeMusicElement) item.localConfiguration.tag;
+                  titleTrackTextview.setText(currentElement.getTitle());
+              }
+             // This is to update the UI, sync the data of ExoPlayer of category fragment into this fragment
+            if(item != null && item.localConfiguration != null && !singletonExoPlayer.isThreadProcessing()){
+                YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                titleTrackTextview.setText(element.getTitle());
+            }
+            if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1 && !singletonExoPlayer.isThreadProcessing()){
+                Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
+                YoutubeMusicElement LastElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration).tag;
+                new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+            }
+              listener = new Player.Listener() {
+                  @Override
+                  public void onPlayerError(@NonNull PlaybackException error) {
+                      // error occurs
+                      Throwable cause = error.getCause();
+                      if (cause instanceof HttpDataSource.HttpDataSourceException) {
+                          HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
+                          if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
+                              Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
+                              Log.d("QuocBug", "onPlayerError: the link is error");
+                              singletonExoPlayer.EndMusic();
+                              Toast.makeText(binding.getRoot().getContext(), "Error occurs", Toast.LENGTH_SHORT).show();
+                              titleTrackTextview.setText(R.string.NoSong_Notification);
+                          }
+                      }
+                  }
+                  @Override
+                  public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
+                      if(mediaItem != null && mediaItem.localConfiguration != null){
+                          YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
+                          titleTrackTextview.setText(element.getTitle());
+                      }
+                      if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
+                          Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
+                          if(singletonExoPlayer.isThreadProcessing())
+                              Log.d("QuocBug", "onMediaItemTransition: True");
+                          else Log.d("QuocBug", "onMediaItemTransition: False");
+                          YoutubeMusicElement LastElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getCurrentMediaItem()).localConfiguration.tag;
+                          new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+                      }
+                  }
+              };
+              singletonExoPlayer.getExoPlayer().addListener(listener);
+        }
+        isHappenBefore = true;
+    }
 }

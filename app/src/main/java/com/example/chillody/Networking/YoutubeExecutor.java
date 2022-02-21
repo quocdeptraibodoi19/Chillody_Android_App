@@ -53,6 +53,7 @@ public class YoutubeExecutor  {
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
     }
     public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<TextView>NextSongTitle){
+        singletonExoPlayer.setThreadProcessing(true);
         executorService = Executors.newFixedThreadPool(1);
         ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
         Handler handler = new Handler(Looper.getMainLooper()){
@@ -69,9 +70,9 @@ public class YoutubeExecutor  {
                             youtubeMusicModelWeakReference.get().setSuccesfulUpdateUI(true);
                             NextSongTitle.get().setText(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getTitle());
                         }
-
                     exoPlayer.addMediaItem(item);
-                    if (!exoPlayer.isPlaying() || !exoPlayer.isCurrentMediaItemLive()){
+                    if(msg.arg1 == youtubeMusicModelWeakReference.get().getLastUpdateIndex())
+                    {
                         exoPlayer.prepare();
                         exoPlayer.play();
                     }
@@ -115,7 +116,7 @@ public class YoutubeExecutor  {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "81851a88camsh166337f6f3bcee2p16c514jsn5a6266161150")
+                                .addHeader("x-rapidapi-key", "6a655d9ce0msh5aba6c4c06f354cp11ae4djsn6e2e8d622ce6")
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
@@ -127,9 +128,12 @@ public class YoutubeExecutor  {
                          handler.sendMessage(message);
                     }
                     youtubeMusicModelWeakReference.get().setLastUpdateIndex(youtubeMusicModelWeakReference.get().getLengthYoutubeList());
+                    singletonExoPlayer.setThreadProcessing(false);
                     Log.d("YouBug", "run: new number of element: "+ String.valueOf(youtubeMusicModelWeakReference.get().getLengthYoutubeList()));
                 } catch (IOException | JSONException  e) {
                     e.printStackTrace();
+                    // for the backing up
+                    singletonExoPlayer.setThreadProcessing(false);
                 }
             }
         });
@@ -137,10 +141,10 @@ public class YoutubeExecutor  {
         executorService = null;
     }
     public void MusicRecommendingExecutor(String lastSongID,WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<TextView>NextSongTitle){
-        if(singletonExoPlayer.isRecommenedProcessing() || isExecuting()) return;
+        if(singletonExoPlayer.isThreadProcessing() || isExecuting()) return;
         Log.d("QuocMusic", "MusicRecommendingExecutor: Recommendation processing");
         executorService = Executors.newFixedThreadPool(1);
-        singletonExoPlayer.setRecommenedProcessing(true);
+        singletonExoPlayer.setThreadProcessing(true);
         ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
         Handler handler = new Handler(Looper.getMainLooper()){
             @Override
@@ -160,12 +164,8 @@ public class YoutubeExecutor  {
                             youtubeMusicModelWeakReference.get().setSuccesfulUpdateUI(true);
                             NextSongTitle.get().setText(Title);
                         }
-
                     exoPlayer.addMediaItem(item);
-                    if (!exoPlayer.isPlaying() || !exoPlayer.isCurrentMediaItemLive()){
-                        exoPlayer.prepare();
-                        exoPlayer.play();
-                    }
+                    exoPlayer.prepare();
                 }
             }
         };
@@ -185,7 +185,6 @@ public class YoutubeExecutor  {
                 try {
                     Response response = client.newCall(request).execute();
                     JSONArray SongArray = new JSONObject(Objects.requireNonNull(response.body()).string()).getJSONArray("videos");
-
                     String title;
                     String songId;
                     String songUrl;
@@ -202,7 +201,7 @@ public class YoutubeExecutor  {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "81851a88camsh166337f6f3bcee2p16c514jsn5a6266161150")
+                                .addHeader("x-rapidapi-key", "6a655d9ce0msh5aba6c4c06f354cp11ae4djsn6e2e8d622ce6")
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
@@ -218,9 +217,10 @@ public class YoutubeExecutor  {
                     }
                     if(youtubeMusicModelWeakReference != null)
                         youtubeMusicModelWeakReference.get().setLastUpdateIndex(youtubeMusicModelWeakReference.get().getLengthYoutubeList());
-                    singletonExoPlayer.setRecommenedProcessing(false);
+                    singletonExoPlayer.setThreadProcessing(false);
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
+                    singletonExoPlayer.setThreadProcessing(false);
                 }
             }
         });
