@@ -32,8 +32,8 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="32dp"
         android:layout_marginTop="8dp"
-        app:scrubber_color="#C4C4C4"
-        app:played_color="#C4C4C4"
+        app:scrubber_color="#BABAF4"
+        app:played_color="#6F6FF2"
         app:unplayed_color="#676767" />
     <RelativeLayout
         android:layout_width="match_parent"

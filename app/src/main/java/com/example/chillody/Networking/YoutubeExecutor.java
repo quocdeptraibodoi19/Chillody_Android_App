@@ -116,7 +116,7 @@ public class YoutubeExecutor  {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "6a655d9ce0msh5aba6c4c06f354cp11ae4djsn6e2e8d622ce6")
+                                .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
@@ -179,7 +179,7 @@ public class YoutubeExecutor  {
                         .url("https://youtube-search6.p.rapidapi.com/video/recommendation/?videoId="+lastSongID)
                         .get()
                         .addHeader("x-rapidapi-host", "youtube-search6.p.rapidapi.com")
-                        .addHeader("x-rapidapi-key", "2347dba099msh0ada479f8c42f9dp144201jsn8fc8b09b17f7")
+                        .addHeader("x-rapidapi-key", "6a655d9ce0msh5aba6c4c06f354cp11ae4djsn6e2e8d622ce6")
                         .build();
 
                 try {
@@ -201,7 +201,7 @@ public class YoutubeExecutor  {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "6a655d9ce0msh5aba6c4c06f354cp11ae4djsn6e2e8d622ce6")
+                                .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");

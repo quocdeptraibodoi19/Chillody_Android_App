@@ -20,21 +20,11 @@
         android:id="@+id/music_fragment"
         android:name="com.example.chillody.Activity_Fragment.music_fragment"
         android:label="music_layout_fragment"
-        tools:layout="@layout/music_layout_fragment" >
-        <action
-            android:id="@+id/action_music_fragment_to_home_fragment"
-            app:destination="@id/home_fragment" />
-    </fragment>
+        tools:layout="@layout/music_layout_fragment" />
     <fragment
         android:id="@+id/loving_playlist_fragment"
         android:name="com.example.chillody.Activity_Fragment.loving_playlist_fragment"
         android:label="loving_playlist_fragment_layout"
         tools:layout="@layout/loving_playlist_fragment_layout" >
-        <action
-            android:id="@+id/action_loving_playlist_fragment_to_home_fragment"
-            app:destination="@id/home_fragment" />
-        <action
-            android:id="@+id/action_loving_playlist_fragment_to_music_fragment"
-            app:destination="@id/music_fragment" />
     </fragment>
 </navigation>

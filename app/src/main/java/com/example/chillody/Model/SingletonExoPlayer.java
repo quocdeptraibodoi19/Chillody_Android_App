@@ -7,6 +7,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 
 public class SingletonExoPlayer {
     // There are currently 3 types of ExoPlayer corresponding to our layouts: chilling, cafe and ghibli
+    // In addition to it, there may be 3 other types which are lovechill, lovecafe and loveghibli
     private String type="";
     private final ExoPlayer exoPlayer;
     private static SingletonExoPlayer singletonExoPlayer = null;

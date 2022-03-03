@@ -6,4 +6,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="loading">Loading...</string>
     <string name="NoSong_Notification">No Song In The List Currently</string>
+    <string name="chilling">Chilling</string>
+    <string name="cafe">Cafe</string>
+    <string name="ghibli">Ghibli</string>
 </resources>

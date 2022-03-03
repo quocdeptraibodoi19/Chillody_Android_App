@@ -58,6 +58,7 @@
             android:layout_marginEnd="32dp"
             android:src="@drawable/heart_solid_24"
             app:tint="#FCFCFC" />
+
         <ImageView
             android:id="@+id/heartREDbtnID"
             android:layout_width="wrap_content"
@@ -66,6 +67,6 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="32dp"
             android:src="@drawable/heart_solid_24_red"
-            android:visibility="invisible"/>
+            android:visibility="invisible" />
     </RelativeLayout>
 </LinearLayout>
