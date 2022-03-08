@@ -1,4 +1,4 @@
-package com.example.chillody.Networking;
+package com.example.chillody.Model;
 
 import android.app.Application;
 

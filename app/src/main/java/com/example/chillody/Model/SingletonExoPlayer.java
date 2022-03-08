@@ -12,6 +12,7 @@ public class SingletonExoPlayer {
     private final ExoPlayer exoPlayer;
     private static SingletonExoPlayer singletonExoPlayer = null;
     private boolean isThreadProcessing = false;
+    private int UpdatingUIFlag = -1;
     private SingletonExoPlayer(Application application){
         exoPlayer = new ExoPlayer.Builder(application).build();
     }
@@ -39,5 +40,11 @@ public class SingletonExoPlayer {
     }
     public boolean isThreadProcessing() {
         return isThreadProcessing;
+    }
+    public void setUIUpdatingFlag(int updateIndex){
+        this.UpdatingUIFlag = updateIndex;
+    }
+    public int getUIUpdatingFlag(){
+        return this.UpdatingUIFlag;
     }
 }

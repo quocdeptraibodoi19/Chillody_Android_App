@@ -6,8 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.example.chillody.Networking.FavSongRepository;
-
 import java.util.List;
 
 public class FavoriteYoutubeViewModel extends AndroidViewModel {
@@ -16,7 +14,7 @@ public class FavoriteYoutubeViewModel extends AndroidViewModel {
         super(application);
         repository = new FavSongRepository(application);
     }
-    public LiveData<List<FavoriteYoutubeElement>> getFavChillingSons(){
+    public LiveData<List<FavoriteYoutubeElement>> getFavChillingSongs(){
         return repository.GetAllChillingFAVSongs();
     }
     public LiveData<List<FavoriteYoutubeElement>> getFavGhibliSongs(){

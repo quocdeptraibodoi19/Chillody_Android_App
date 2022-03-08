@@ -7,8 +7,9 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chillody.Adapter.UnsplashImgAdapter;
+import com.example.chillody.Model.GeneralYoutubeViewModel;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
 import com.example.chillody.Model.YoutubeMusicModel;
@@ -34,17 +36,12 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.squareup.moshi.Json;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.lang.ref.WeakReference;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class music_fragment extends Fragment {
     private MusicLayoutFragmentBinding binding;
@@ -62,6 +59,7 @@ public class music_fragment extends Fragment {
     private SharedPreferences sharedPreferences;
     private int MediaItemPosition;
     private boolean isHappenBefore = false;
+    private LiveData<List<YoutubeMusicElement>> youtubeSongLists;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +69,7 @@ public class music_fragment extends Fragment {
         switch (nameOfCategory){
             case "Chilling":
                 ImgQuery = "sadness city";
-                MusicQuery = "Đến Cuối Cùng Lại Cô Đơn - Dickson";
+                MusicQuery = "Em Về Tình Khôi / Hali (Acoustic Cover)\n";
                 break;
             case "Ghibli":
                 ImgQuery = "kyoto";
@@ -86,57 +84,56 @@ public class music_fragment extends Fragment {
         }
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         sharedPreferences = Objects.requireNonNull(getContext()).getSharedPreferences(home_fragment.sharedFile+nameOfCategory, Context.MODE_PRIVATE);
+        MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
         // pass data into the from the exoplayer into the view
         // save the data and maintain the exoplayer
-        if(youtubeMusicModel.getLengthYoutubeList() == 0)
-        {
-            if(singletonExoPlayer.getType().equals(nameOfCategory)){
-                Log.d("QuocBug", "onViewCreated: same type");
-                YoutubeMusicElement currentElement;
-                for(int i=0; i<singletonExoPlayer.getExoPlayer().getMediaItemCount();i++)
-                    {
-                        currentElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getMediaItemAt(i).localConfiguration).tag;
-                        youtubeMusicModel.AddMusicElement(currentElement);
-                    }
-                youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + singletonExoPlayer.getExoPlayer().getMediaItemCount());
-            }
-            else{
-                Log.d("QuocBug", "onViewCreated: NOT same type");
-                singletonExoPlayer.EndMusic();
-                singletonExoPlayer.setType(nameOfCategory);
-                JSONArray titleArray = null;
-                JSONArray urlArray = null;
-                JSONArray idArray = null;
-                try {
-                    titleArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOTITLE_STATE,"[]"));
-                    urlArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOURL_STATE,"[]"));
-                    idArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOID_STATE,"[]"));
-                    MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
-                    int length = Math.min(titleArray.length(),Math.min(urlArray.length(),idArray.length()));
-                    YoutubeMusicElement element;
-                    for(int i = 0; i< length; i++){
-                        if(titleArray.getString(i).equals("") || urlArray.getString(i).equals("") || idArray.getString(i).equals("")) continue;
-                        element = new YoutubeMusicElement(titleArray.getString(i),idArray.getString(i),urlArray.getString(i));
-                        MediaItem mediaItem = new MediaItem.Builder()
-                                .setUri(urlArray.getString(i)).setTag(element)
-                                .build();
-                        singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
-                        singletonExoPlayer.getExoPlayer().prepare();
-                        youtubeMusicModel.AddMusicElement(element);
-                        if(i == MediaItemPosition){
-                            Log.d("QuocBug", "onViewCreated: in loop: "+ String.valueOf(MediaItemPosition));
-                            singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
-                        }
-                        else if(i == MediaItemPosition + 1)
-                            singletonExoPlayer.getExoPlayer().play();
-                    }
-                    singletonExoPlayer.getExoPlayer().play();
-                    youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + titleArray.length());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+//        if(youtubeMusicModel.getLengthYoutubeList() == 0)
+//        {
+//            if(singletonExoPlayer.getType().equals(nameOfCategory)){
+//                Log.d("QuocBug", "onViewCreated: same type");
+////                YoutubeMusicElement currentElement;
+////                for(int i=0; i<singletonExoPlayer.getExoPlayer().getMediaItemCount();i++)
+////                    {
+////                        currentElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getMediaItemAt(i).localConfiguration).tag;
+////                        youtubeMusicModel.AddMusicElement(currentElement);
+////                    }
+////                youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + singletonExoPlayer.getExoPlayer().getMediaItemCount());
+//            }
+//            else{
+////                Log.d("QuocBug", "onViewCreated: NOT same type");
+////                singletonExoPlayer.EndMusic();
+////                singletonExoPlayer.setType(nameOfCategory);
+////                JSONArray titleArray = null;
+////                JSONArray urlArray = null;
+////                JSONArray idArray = null;
+////                JSONArray loveArray = null;
+//                //                    titleArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOTITLE_STATE,"[]"));
+////                    urlArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOURL_STATE,"[]"));
+////                    idArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOID_STATE,"[]"));
+////                    loveArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOLOVE_STATE,"[]"));
+//                MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
+////                    int length = Math.min(titleArray.length(),Math.min(urlArray.length(),idArray.length()));
+////                    YoutubeMusicElement element;
+////                    for(int i = 0; i< length; i++){
+////                        if(titleArray.getString(i).equals("") || urlArray.getString(i).equals("") || idArray.getString(i).equals("")) continue;
+////                        element = new YoutubeMusicElement(titleArray.getString(i),idArray.getString(i),urlArray.getString(i),loveArray.getInt(i));
+////                        MediaItem mediaItem = new MediaItem.Builder()
+////                                .setUri(urlArray.getString(i)).setTag(element)
+////                                .build();
+////                        singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
+////                        singletonExoPlayer.getExoPlayer().prepare();
+////                        youtubeMusicModel.AddMusicElement(element);
+////                        if(i == MediaItemPosition){
+////                            Log.d("QuocBug", "onViewCreated: in loop: "+ String.valueOf(MediaItemPosition));
+////                            singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
+////                        }
+////                        else if(i == MediaItemPosition + 1)
+////                            singletonExoPlayer.getExoPlayer().play();
+////                    }
+////                    singletonExoPlayer.getExoPlayer().play();
+////                    youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + titleArray.length());
+//            }
+//        }
     }
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -154,7 +151,10 @@ public class music_fragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         unsplashImgModel = ViewModelProviders.of(this).get(UnsplashImgModel.class);
+        GeneralYoutubeViewModel generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
+        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         youtubeExecutor = new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication());
         binding.ProgressBarID.setIndeterminateDrawable(new FoldingCube());
         UnsplashImgAdapter unsplashImgAdapter = new UnsplashImgAdapter(binding.getRoot().getContext(),binding.ProgressBarID);
@@ -162,33 +162,107 @@ public class music_fragment extends Fragment {
         binding.RecyclerImgViewID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
         CurrentSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.musiclayouttitletrackID);
         NextSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.NextSongTitletrackID);
-        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         binding.PlayerControlViewID.setPlayer(singletonExoPlayer.getExoPlayer());
-        Log.d("QuocBug", "onViewCreated: in the oncreateview");
-        // update data on UI
-        if(singletonExoPlayer.getExoPlayer().getMediaItemCount() != 0){
+
+        if(!singletonExoPlayer.getType().equals(nameOfCategory))
+        {
+            singletonExoPlayer.EndMusic();
+            singletonExoPlayer.setType(nameOfCategory);
+                switch (nameOfCategory) {
+                case "Chilling":
+                    youtubeSongLists = generalYoutubeViewModel.getChillingSongs();
+                    break;
+                case "Cafe":
+                    youtubeSongLists = generalYoutubeViewModel.getCafeSongs();
+                    break;
+                case "Ghibli":
+                    youtubeSongLists = generalYoutubeViewModel.getGhibliSongs();
+                    break;
+                }
+            youtubeSongLists.observe(getViewLifecycleOwner(), new Observer<List<YoutubeMusicElement>>() {
+                @Override
+                public void onChanged(List<YoutubeMusicElement> youtubeMusicElements) {
+                    Log.d("PhuTest", "onChanged: observer change");
+                    Log.d("PhuTest", "onChanged: the current size of list: "+ String.valueOf(singletonExoPlayer.getExoPlayer().getMediaItemCount()));
+                    singletonExoPlayer.setType(nameOfCategory);
+                    if(youtubeMusicElements.size() == 0){
+                        Log.d("QuocTest", "onChanged: Trigger the observer");
+                        youtubeExecutor.MusicAsyncExecutor(nameOfCategory,MusicQuery,new WeakReference<>(NextSongNameTextView));
+                    }
+                    else if(singletonExoPlayer.getExoPlayer().getMediaItemCount() < youtubeMusicElements.size()){
+                        // This just is called when the loading the data from the database
+                        Log.d("PhuTest", "onChanged: The total num of songs loaded is: "+ String.valueOf(youtubeMusicElements.size()));
+                        Log.d("PhuTest", "onChanged: The MediaPosition is: "+ String.valueOf(MediaItemPosition));
+                        MediaItem item;
+                        List<MediaItem> items = new ArrayList<>();
+                        for(int i=0 ;i< youtubeMusicElements.size(); i++){
+                            item = new MediaItem.Builder().setUri(youtubeMusicElements.get(i).getDownloadedMusicUrl())
+                                    .setTag(youtubeMusicElements.get(i)).build();
+                            items.add(item);
+//                            singletonExoPlayer.getExoPlayer().addMediaItem(item);
+//                            Log.d("PhuTest", "onChanged: The loading index: "+ String.valueOf(i));
+//                            singletonExoPlayer.getExoPlayer().prepare();
+//                            if(i == MediaItemPosition)
+//                                singletonExoPlayer.getExoPlayer().seekTo(i,0);
+//                            else if(i == MediaItemPosition +1)
+//                            {
+//                                Log.d("PhuTest", "onChanged: The playing index: "+ String.valueOf(i));
+//                                singletonExoPlayer.getExoPlayer().play();
+//                            }
+                        }
+                        Log.d("PhuTest", "onChanged: The size of the recent list of songs: "+ String.valueOf(singletonExoPlayer.getExoPlayer().getMediaItemCount()));
+                        singletonExoPlayer.getExoPlayer().addMediaItems(items);
+                        singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
+                        singletonExoPlayer.getExoPlayer().prepare();
+                        singletonExoPlayer.getExoPlayer().play();
+                    }
+                }
+            });
+        }
+        else{
+            if(singletonExoPlayer.getExoPlayer().getMediaItemCount() != 0){
             Log.d("QuocBug", "onViewCreated: Updating the UI");
             ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
-            YoutubeMusicElement element = (YoutubeMusicElement) exoPlayer.getCurrentMediaItem().localConfiguration.tag;
+            YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(Objects.requireNonNull(exoPlayer.getCurrentMediaItem()).localConfiguration).tag;
             CurrentSongNameTextView.setText(element.getTitle());
             if(exoPlayer.getCurrentMediaItemIndex() + 1 < exoPlayer.getMediaItemCount()){
                 element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(exoPlayer.getCurrentMediaItemIndex() + 1).localConfiguration).tag;
                 NextSongNameTextView.setText(element.getTitle());
-                youtubeMusicModel.setSuccesfulUpdateUI(true);
+                singletonExoPlayer.setUIUpdatingFlag(-1);
             }
             else{
-                youtubeMusicModel.setSuccesfulUpdateUI(false);
-                youtubeExecutor.MusicRecommendingExecutor(element.getMusicID(),new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
+                Log.d("QuocBug", "onViewCreated: Updating the UI: "+ String.valueOf(singletonExoPlayer.getUIUpdatingFlag()));
+                singletonExoPlayer.setUIUpdatingFlag(singletonExoPlayer.getExoPlayer().getMediaItemCount());
+                if(!singletonExoPlayer.isThreadProcessing())
+                    youtubeExecutor.MusicRecommendingExecutor(nameOfCategory,element.getMusicID(),new WeakReference<>(NextSongNameTextView));
             }
         }
+        }
+        // update data on UI
+//        if(singletonExoPlayer.getExoPlayer().getMediaItemCount() != 0){
+//            Log.d("QuocBug", "onViewCreated: Updating the UI");
+//            ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
+//            YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(Objects.requireNonNull(exoPlayer.getCurrentMediaItem()).localConfiguration).tag;
+//            CurrentSongNameTextView.setText(element.getTitle());
+//            if(exoPlayer.getCurrentMediaItemIndex() + 1 < exoPlayer.getMediaItemCount()){
+//                element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(exoPlayer.getCurrentMediaItemIndex() + 1).localConfiguration).tag;
+//                NextSongNameTextView.setText(element.getTitle());
+//                singletonExoPlayer.setUIUpdatingFlag(-1);
+//            }
+//            else{
+//                singletonExoPlayer.setUIUpdatingFlag(singletonExoPlayer.getExoPlayer().getMediaItemCount());
+//                if(singletonExoPlayer.isThreadProcessing())
+//                    youtubeExecutor.MusicRecommendingExecutor(nameOfCategory,element.getMusicID(),new WeakReference<>(NextSongNameTextView));
+//            }
+//        }
 
         // process the music:
-        if(youtubeMusicModel.getLengthYoutubeList()==0 && !youtubeExecutor.isExecuting()){
-            Log.d("QuocSoundcloud", "onViewCreated: ignite the Executor");
-            singletonExoPlayer.EndMusic();
-            singletonExoPlayer.setType(nameOfCategory);
-            youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
-        }
+//        if(youtubeMusicModel.getLengthYoutubeList()==0 && !youtubeExecutor.isExecuting()){
+//            Log.d("QuocSoundcloud", "onViewCreated: ignite the Executor");
+//            singletonExoPlayer.EndMusic();
+//            singletonExoPlayer.setType(nameOfCategory);
+//            youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
+//        }
         // This is to add the listener to the singletonExoPlayer to update the UI depending on the MediaItem
         // the reason why when you backstack and come to the the same layout , getting the title with no changes is that
         // the current exoplayer does not clear the mediaList and the listener bellow isn't invoked
@@ -202,9 +276,9 @@ public class music_fragment extends Fragment {
                     if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
                         Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
                         Log.d("QuocBug", "onPlayerError: the link is error");
+                        generalYoutubeViewModel.deleteSongMusicType(singletonExoPlayer.getType());
                         singletonExoPlayer.EndMusic();
-                        youtubeMusicModel.ResetModel();
-                        youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
+                        youtubeExecutor.MusicAsyncExecutor(nameOfCategory,MusicQuery,new WeakReference<>(NextSongNameTextView));
                     }
                 }
             }
@@ -214,31 +288,39 @@ public class music_fragment extends Fragment {
                 if(mediaItem != null && mediaItem.localConfiguration != null){
                     int curIndex = singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex();
                     YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
-                    if(curIndex == youtubeMusicModel.getLengthYoutubeList())
-                    {
-                        youtubeMusicModel.AddMusicElement(element);
-                        // The youtubeExecutor should have been designed as a singleton. I'm too lazy to repair it now because it affects the whole project =((((
-                        // the bellow is the slight hack to fix the bug =(( But it's not an optimized approach to fix it.
-                        // TODO: Change the YoutubeExecutor into the singleton if you can in the future.
-                        if(curIndex +1 < singletonExoPlayer.getExoPlayer().getMediaItemCount())
-                            youtubeMusicModel.AddMusicElement((YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getMediaItemAt(curIndex+1).localConfiguration.tag);
-                    }
+//                    if(curIndex == youtubeMusicModel.getLengthYoutubeList())
+//                    {
+//                        youtubeMusicModel.AddMusicElement(element);
+//                        // The youtubeExecutor should have been designed as a singleton. I'm too lazy to repair it now because it affects the whole project =((((
+//                        // the bellow is the slight hack to fix the bug =(( But it's not an optimized approach to fix it.
+//                        // TODO: Change the YoutubeExecutor into the singleton if you can in the future.
+//                        if(curIndex +1 < singletonExoPlayer.getExoPlayer().getMediaItemCount())
+//                            youtubeMusicModel.AddMusicElement((YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getMediaItemAt(curIndex+1).localConfiguration.tag);
+//                    }
                     CurrentSongNameTextView.setText(element.getTitle());
                     Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
                     if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() < singletonExoPlayer.getExoPlayer().getMediaItemCount() -1){
                         // this is NOT the last song in the list scope
-                        youtubeMusicModel.setSuccesfulUpdateUI(true);
-                        NextSongNameTextView.setText(youtubeMusicModel.getMusicElement(curIndex+1).getTitle());
+
+                        singletonExoPlayer.setUIUpdatingFlag(-1);
+                        MediaItem item = singletonExoPlayer.getExoPlayer().getMediaItemAt(curIndex+1);
+                        if(item.localConfiguration != null)
+                        element = (YoutubeMusicElement) item.localConfiguration.tag;
+                        NextSongNameTextView.setText(element.getTitle());
                     }
                     else
                     {
                         // this is the last song in the list scope
-                        youtubeMusicModel.setSuccesfulUpdateUI(false);
+                        Log.d("QuocPhu", "onMediaItemTransition: not ready for changing+ "+ element.getTitle());
+                        Log.d("QuocPhu", "onMediaItemTransition: The current position of the song is: "+ String.valueOf(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex()));
+                        Log.d("QuocPhu", "onMediaItemTransition: The total number of songs in the list recently is: "+ String.valueOf(singletonExoPlayer.getExoPlayer().getMediaItemCount()));
+                        singletonExoPlayer.setUIUpdatingFlag(singletonExoPlayer.getExoPlayer().getMediaItemCount());
                         NextSongNameTextView.setText(R.string.loading);
-                        youtubeExecutor.MusicRecommendingExecutor(element.getMusicID(),new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
-
+                        if(!singletonExoPlayer.isThreadProcessing())
+                        youtubeExecutor.MusicRecommendingExecutor(nameOfCategory,element.getMusicID(),new WeakReference<>(NextSongNameTextView));
                     }
                 }
+                // 2022-03-08 15:16:36.438
             }
         };
         singletonExoPlayer.getExoPlayer().addListener(listener);
@@ -298,22 +380,25 @@ public class music_fragment extends Fragment {
         super.onPause();
         SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        Set<String> titleSet = new LinkedHashSet<>();
-        Set<String> urlSet = new LinkedHashSet<>();
-        Set<String> idSet = new LinkedHashSet<>();
         ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
-        for(int i=0; i< exoPlayer.getMediaItemCount(); i++){
-            Log.d("QuocBug", "onPause: ");
-            YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(i).localConfiguration).tag;
-            titleSet.add(element.getTitle());
-            urlSet.add(element.getDownloadedMusicUrl());
-            idSet.add(element.getMusicID());
-        }
+//        List<String> titleSet = new ArrayList<>();
+//        List<String> urlSet = new ArrayList<>();
+//        List<String> idSet = new ArrayList<>();
+//        List<Integer> loveSet = new ArrayList<>();
+//        for(int i=0; i< exoPlayer.getMediaItemCount(); i++){
+//            Log.d("QuocBug", "onPause: ");
+//            YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(i).localConfiguration).tag;
+//            titleSet.add(element.getTitle());
+//            urlSet.add(element.getDownloadedMusicUrl());
+//            idSet.add(element.getMusicID());
+//            loveSet.add((element.isFavorite())? 1:0);
+//        }
         MediaItemPosition =exoPlayer.getCurrentMediaItemIndex();
         editor.putInt(home_fragment.LAST_EXOPOSITEM_STATE,MediaItemPosition);
-        editor.putString(home_fragment.LAST_EXOTITLE_STATE,new JSONArray(titleSet).toString());
-        editor.putString(home_fragment.LAST_EXOURL_STATE,new JSONArray(urlSet).toString());
-        editor.putString(home_fragment.LAST_EXOID_STATE, new JSONArray(idSet).toString());
+//        editor.putString(home_fragment.LAST_EXOTITLE_STATE,new JSONArray(titleSet).toString());
+//        editor.putString(home_fragment.LAST_EXOURL_STATE,new JSONArray(urlSet).toString());
+//        editor.putString(home_fragment.LAST_EXOID_STATE, new JSONArray(idSet).toString());
+//        editor.putString(home_fragment.LAST_EXOLOVE_STATE, new JSONArray(loveSet).toString());
         editor.apply();
 
     }
@@ -335,4 +420,5 @@ public class music_fragment extends Fragment {
         }
         isHappenBefore = true;
     }
+
 }

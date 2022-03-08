@@ -9,4 +9,6 @@
     <string name="chilling">Chilling</string>
     <string name="cafe">Cafe</string>
     <string name="ghibli">Ghibli</string>
+    <string name="exo_duration_time_str">4:32</string>
+    <string name="exo_position_time_string">0:00</string>
 </resources>

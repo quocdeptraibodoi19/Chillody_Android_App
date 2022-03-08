@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.room.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +38,6 @@ public class YoutubeMusicModel extends AndroidViewModel {
     public YoutubeMusicElement getMusicElement(int index){
         return youtubeMusicElementList.get(index);
     }
-//    public boolean isLastSongInList(int curIndex){
-//        Log.d("QuocBug", "isLastSongInList: "+String.valueOf(curIndex)+" - "+String.valueOf(youtubeMusicElementList.size()-1));
-//        return curIndex == youtubeMusicElementList.size() - 1;
-//    }
 
     public int getLastUpdateIndex(){
         return lastUpdateIndex;
@@ -48,7 +45,6 @@ public class YoutubeMusicModel extends AndroidViewModel {
     public void setLastUpdateIndex(int index){
         lastUpdateIndex = index;
     }
-    // this method is for the sake of debugging
     public int getLengthYoutubeList(){
         return youtubeMusicElementList.size();
     }

@@ -10,9 +10,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.chillody.Model.GeneralSongRepository;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
-import com.example.chillody.Model.YoutubeMusicModel;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 
@@ -49,29 +49,38 @@ public class YoutubeExecutor  {
     private final static int EXE_RECOMMEND_SONG_MESSAGE = 11012031;
     private final SingletonExoPlayer singletonExoPlayer;
     private ExecutorService executorService;
+    private GeneralSongRepository repository;
     public YoutubeExecutor(@NonNull Application application) {
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
+        repository =  new GeneralSongRepository(application);
     }
-    public void MusicAsyncExecutor(String query, WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<TextView>NextSongTitle){
+    public void MusicAsyncExecutor(String musicType,String query, WeakReference<TextView>NextSongTitle){
         singletonExoPlayer.setThreadProcessing(true);
         executorService = Executors.newFixedThreadPool(1);
+        int lastUpdate = singletonExoPlayer.getExoPlayer().getMediaItemCount();
+        final YoutubeMusicElement[] element = new YoutubeMusicElement[1];
         ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
         Handler handler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if(msg.what == EXE_SONG_MESSAGE){
+                    element[0] = (YoutubeMusicElement) msg.obj;
                   //  MediaItem item = MediaItem.fromUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl());
-                    MediaItem item = new MediaItem.Builder().setUri(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getDownloadedMusicUrl())
-                            .setTag(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1)).build();
-                    if(youtubeMusicModelWeakReference.get()!=null)
-                        if(!youtubeMusicModelWeakReference.get().isSuccesfulUpdateUI())
-                        {
-                            youtubeMusicModelWeakReference.get().setSuccesfulUpdateUI(true);
-                            NextSongTitle.get().setText(youtubeMusicModelWeakReference.get().getMusicElement(msg.arg1).getTitle());
-                        }
+                    MediaItem item = new MediaItem.Builder().setUri(element[0].getDownloadedMusicUrl())
+                            .setTag(element[0]).build();
                     exoPlayer.addMediaItem(item);
-                    if(msg.arg1 == youtubeMusicModelWeakReference.get().getLastUpdateIndex())
+                    repository.insertNewSong(element[0]);
+                    Log.d("QuocPhu", "handleMessage: Flag: "+ String.valueOf(singletonExoPlayer.getUIUpdatingFlag()) +" current pos: "+String.valueOf(msg.arg1));
+                    if(singletonExoPlayer.getUIUpdatingFlag()!=-1 && singletonExoPlayer.getUIUpdatingFlag() == msg.arg1)
+                        {
+                           // Log.d("QuocPhu", "handleMessage: Flag: "+ String.valueOf(singletonExoPlayer.getUIUpdatingFlag()) +" current pos: "+String.valueOf(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex()));
+                            Log.d("QuocPhu", "handleMessage: Update the name of next song: "+ element[0].getTitle());
+                            singletonExoPlayer.setUIUpdatingFlag(-1);
+                            if(NextSongTitle.get() != null)
+                                NextSongTitle.get().setText(element[0].getTitle());
+                        }
+                    if(msg.arg1 == lastUpdate)
                     {
                         exoPlayer.prepare();
                         exoPlayer.play();
@@ -101,15 +110,12 @@ public class YoutubeExecutor  {
                     String title;
                     String songId;
                     String songUrl;
-
-                    Log.d("YouBug", "run: old number of element: "+ String.valueOf(youtubeMusicModelWeakReference.get().getLengthYoutubeList()));
                     // Todo: Be quick to do the optimization and update the i<2 (we set i<2 in order to save the resource)
-                    for(int i=youtubeMusicModelWeakReference.get().getLastUpdateIndex(); i<youtubeMusicModelWeakReference.get().getLastUpdateIndex()+2; i++){
-                        title = searchedSongsArray.getJSONObject(i - youtubeMusicModelWeakReference.get().getLastUpdateIndex()).getString("title");
+                    for(int i=lastUpdate; i< lastUpdate+2; i++){
+                        title = searchedSongsArray.getJSONObject(i - lastUpdate).getString("title");
                         Log.d("YouBug", "run: "+ title);
-                        songId = searchedSongsArray.getJSONObject(i - youtubeMusicModelWeakReference.get().getLastUpdateIndex()).getString("id");
+                        songId = searchedSongsArray.getJSONObject(i - lastUpdate).getString("id");
                         Log.d("YouBug", "run: "+ songId);
-                        youtubeMusicModelWeakReference.get().AddMusicElement(new YoutubeMusicElement(title,songId));
                         // To get the mp4 form from the ID of the youtube ID
                         client = new OkHttpClient();
                         request = new Request.Builder()
@@ -120,16 +126,14 @@ public class YoutubeExecutor  {
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
-                         youtubeMusicModelWeakReference.get().getMusicElement(i).setDownloadedMusicUrl(songUrl);
                         Log.d("YouBug", "run: bug in the message");
                          Message message = new Message();
                          message.what = EXE_SONG_MESSAGE;
                          message.arg1 = i;
+                         message.obj = new YoutubeMusicElement(title,songId,songUrl,musicType,0);
                          handler.sendMessage(message);
                     }
-                    youtubeMusicModelWeakReference.get().setLastUpdateIndex(youtubeMusicModelWeakReference.get().getLengthYoutubeList());
                     singletonExoPlayer.setThreadProcessing(false);
-                    Log.d("YouBug", "run: new number of element: "+ String.valueOf(youtubeMusicModelWeakReference.get().getLengthYoutubeList()));
                 } catch (IOException | JSONException  e) {
                     e.printStackTrace();
                     // for the backing up
@@ -140,36 +144,35 @@ public class YoutubeExecutor  {
         executorService.shutdown();
         executorService = null;
     }
-    public void MusicRecommendingExecutor(String lastSongID,WeakReference<YoutubeMusicModel> youtubeMusicModelWeakReference, WeakReference<TextView>NextSongTitle){
+    public void MusicRecommendingExecutor(String musicType,String lastSongID, WeakReference<TextView>NextSongTitle){
         if(singletonExoPlayer.isThreadProcessing() || isExecuting()) return;
         Log.d("QuocMusic", "MusicRecommendingExecutor: Recommendation processing");
         executorService = Executors.newFixedThreadPool(1);
         singletonExoPlayer.setThreadProcessing(true);
         ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
+        int lastIndexOfSong = exoPlayer.getMediaItemCount();
+        final YoutubeMusicElement[] element = new YoutubeMusicElement[1];
         Handler handler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 // bellow code is different from the above one because this function can ignite at the home_fragment whereas the youtubeMusicModelWeakReference can be null
                 if(msg.what == EXE_RECOMMEND_SONG_MESSAGE){
-                    String SongID = msg.getData().getString("SongID");
-                    String Title = msg.getData().getString("Title");
-                    String DownloadedUrl = msg.getData().getString("DownloadedUrl");
-
-                    MediaItem item = new MediaItem.Builder().setUri(DownloadedUrl)
-                            .setTag(new YoutubeMusicElement(Title,SongID,DownloadedUrl)).build();
-                    if(youtubeMusicModelWeakReference!=null)
-                        if(!youtubeMusicModelWeakReference.get().isSuccesfulUpdateUI())
-                        {
-                            youtubeMusicModelWeakReference.get().setSuccesfulUpdateUI(true);
-                            NextSongTitle.get().setText(Title);
-                        }
+                    element[0] = (YoutubeMusicElement) msg.obj;
+                    MediaItem item = new MediaItem.Builder().setUri(element[0].getDownloadedMusicUrl())
+                            .setTag(element[0]).build();
                     exoPlayer.addMediaItem(item);
+                    if(singletonExoPlayer.getUIUpdatingFlag()!= -1 && singletonExoPlayer.getUIUpdatingFlag() == exoPlayer.getMediaItemCount()-1)
+                        {
+                            singletonExoPlayer.setUIUpdatingFlag(-1);
+                            if(NextSongTitle.get() != null)
+                                NextSongTitle.get().setText(element[0].getTitle());
+                        }
+                    repository.insertNewSong(element[0]);
                     exoPlayer.prepare();
                 }
             }
         };
-        int lastIndexOfSong = exoPlayer.getMediaItemCount();
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -189,11 +192,9 @@ public class YoutubeExecutor  {
                     String songId;
                     String songUrl;
                     Bundle bundle = new Bundle();
-                    for(int i=lastIndexOfSong;i<lastIndexOfSong+4;i++){
+                    for(int i=lastIndexOfSong;i<lastIndexOfSong+2;i++){
                         title = SongArray.getJSONObject(i - lastIndexOfSong).getString("title");
                         songId = SongArray.getJSONObject(i - lastIndexOfSong).getString("video_id");
-                        if(youtubeMusicModelWeakReference != null)
-                            youtubeMusicModelWeakReference.get().AddMusicElement(new YoutubeMusicElement(title,songId));
                         // To get the mp4 form from the ID of the youtube ID
                         Log.d("QuocMusic", "run: the title is: "+ title);
                         client = new OkHttpClient();
@@ -205,18 +206,11 @@ public class YoutubeExecutor  {
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
-                        if(youtubeMusicModelWeakReference != null)
-                            youtubeMusicModelWeakReference.get().getMusicElement(i).setDownloadedMusicUrl(songUrl);
                         Message message = new Message();
                         message.what = EXE_RECOMMEND_SONG_MESSAGE;
-                        bundle.putString("Title",title);
-                        bundle.putString("SongID",songId);
-                        bundle.putString("DownloadedUrl",songUrl);
-                        message.setData(bundle);
+                        message.obj = new YoutubeMusicElement(title,songId,songUrl,musicType,0);
                         handler.sendMessage(message);
                     }
-                    if(youtubeMusicModelWeakReference != null)
-                        youtubeMusicModelWeakReference.get().setLastUpdateIndex(youtubeMusicModelWeakReference.get().getLengthYoutubeList());
                     singletonExoPlayer.setThreadProcessing(false);
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();

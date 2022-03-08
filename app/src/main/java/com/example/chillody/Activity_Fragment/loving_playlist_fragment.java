@@ -234,4 +234,10 @@ public class loving_playlist_fragment extends Fragment {
         }
         isHappenBefore = true;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d("QuocTest", "onDestroy: onplaylist");
+    }
 }
