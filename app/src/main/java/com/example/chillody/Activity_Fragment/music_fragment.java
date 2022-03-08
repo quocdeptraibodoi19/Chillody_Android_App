@@ -85,55 +85,6 @@ public class music_fragment extends Fragment {
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         sharedPreferences = Objects.requireNonNull(getContext()).getSharedPreferences(home_fragment.sharedFile+nameOfCategory, Context.MODE_PRIVATE);
         MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
-        // pass data into the from the exoplayer into the view
-        // save the data and maintain the exoplayer
-//        if(youtubeMusicModel.getLengthYoutubeList() == 0)
-//        {
-//            if(singletonExoPlayer.getType().equals(nameOfCategory)){
-//                Log.d("QuocBug", "onViewCreated: same type");
-////                YoutubeMusicElement currentElement;
-////                for(int i=0; i<singletonExoPlayer.getExoPlayer().getMediaItemCount();i++)
-////                    {
-////                        currentElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getMediaItemAt(i).localConfiguration).tag;
-////                        youtubeMusicModel.AddMusicElement(currentElement);
-////                    }
-////                youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + singletonExoPlayer.getExoPlayer().getMediaItemCount());
-//            }
-//            else{
-////                Log.d("QuocBug", "onViewCreated: NOT same type");
-////                singletonExoPlayer.EndMusic();
-////                singletonExoPlayer.setType(nameOfCategory);
-////                JSONArray titleArray = null;
-////                JSONArray urlArray = null;
-////                JSONArray idArray = null;
-////                JSONArray loveArray = null;
-//                //                    titleArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOTITLE_STATE,"[]"));
-////                    urlArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOURL_STATE,"[]"));
-////                    idArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOID_STATE,"[]"));
-////                    loveArray = new JSONArray(sharedPreferences.getString(home_fragment.LAST_EXOLOVE_STATE,"[]"));
-//                MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
-////                    int length = Math.min(titleArray.length(),Math.min(urlArray.length(),idArray.length()));
-////                    YoutubeMusicElement element;
-////                    for(int i = 0; i< length; i++){
-////                        if(titleArray.getString(i).equals("") || urlArray.getString(i).equals("") || idArray.getString(i).equals("")) continue;
-////                        element = new YoutubeMusicElement(titleArray.getString(i),idArray.getString(i),urlArray.getString(i),loveArray.getInt(i));
-////                        MediaItem mediaItem = new MediaItem.Builder()
-////                                .setUri(urlArray.getString(i)).setTag(element)
-////                                .build();
-////                        singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
-////                        singletonExoPlayer.getExoPlayer().prepare();
-////                        youtubeMusicModel.AddMusicElement(element);
-////                        if(i == MediaItemPosition){
-////                            Log.d("QuocBug", "onViewCreated: in loop: "+ String.valueOf(MediaItemPosition));
-////                            singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
-////                        }
-////                        else if(i == MediaItemPosition + 1)
-////                            singletonExoPlayer.getExoPlayer().play();
-////                    }
-////                    singletonExoPlayer.getExoPlayer().play();
-////                    youtubeMusicModel.setLastUpdateIndex(youtubeMusicModel.getLastUpdateIndex() + titleArray.length());
-//            }
-//        }
     }
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -199,16 +150,6 @@ public class music_fragment extends Fragment {
                             item = new MediaItem.Builder().setUri(youtubeMusicElements.get(i).getDownloadedMusicUrl())
                                     .setTag(youtubeMusicElements.get(i)).build();
                             items.add(item);
-//                            singletonExoPlayer.getExoPlayer().addMediaItem(item);
-//                            Log.d("PhuTest", "onChanged: The loading index: "+ String.valueOf(i));
-//                            singletonExoPlayer.getExoPlayer().prepare();
-//                            if(i == MediaItemPosition)
-//                                singletonExoPlayer.getExoPlayer().seekTo(i,0);
-//                            else if(i == MediaItemPosition +1)
-//                            {
-//                                Log.d("PhuTest", "onChanged: The playing index: "+ String.valueOf(i));
-//                                singletonExoPlayer.getExoPlayer().play();
-//                            }
                         }
                         Log.d("PhuTest", "onChanged: The size of the recent list of songs: "+ String.valueOf(singletonExoPlayer.getExoPlayer().getMediaItemCount()));
                         singletonExoPlayer.getExoPlayer().addMediaItems(items);
@@ -219,6 +160,11 @@ public class music_fragment extends Fragment {
                 }
             });
         }
+        // To update the UI if the type of singleton is corresponding to this category
+        // why in the homefragment this block is ommited in the onviewcreated because there are no fragments before homefragment that can change the data in the singleton and need it to sync its UI
+        // but the music fragment depends on the data of the home_fragment when it has the same type with the singleton.
+        // Imagine that there is a case you are listening to music in homefragment and it moves to another song and suddenly you navigate to the music_fragment
+        // of the category with the same type to the singleton recently and it need to update the UI. (this just like the explanation in the homefragment in the onresume)
         else{
             if(singletonExoPlayer.getExoPlayer().getMediaItemCount() != 0){
             Log.d("QuocBug", "onViewCreated: Updating the UI");
@@ -238,31 +184,6 @@ public class music_fragment extends Fragment {
             }
         }
         }
-        // update data on UI
-//        if(singletonExoPlayer.getExoPlayer().getMediaItemCount() != 0){
-//            Log.d("QuocBug", "onViewCreated: Updating the UI");
-//            ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
-//            YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(Objects.requireNonNull(exoPlayer.getCurrentMediaItem()).localConfiguration).tag;
-//            CurrentSongNameTextView.setText(element.getTitle());
-//            if(exoPlayer.getCurrentMediaItemIndex() + 1 < exoPlayer.getMediaItemCount()){
-//                element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(exoPlayer.getCurrentMediaItemIndex() + 1).localConfiguration).tag;
-//                NextSongNameTextView.setText(element.getTitle());
-//                singletonExoPlayer.setUIUpdatingFlag(-1);
-//            }
-//            else{
-//                singletonExoPlayer.setUIUpdatingFlag(singletonExoPlayer.getExoPlayer().getMediaItemCount());
-//                if(singletonExoPlayer.isThreadProcessing())
-//                    youtubeExecutor.MusicRecommendingExecutor(nameOfCategory,element.getMusicID(),new WeakReference<>(NextSongNameTextView));
-//            }
-//        }
-
-        // process the music:
-//        if(youtubeMusicModel.getLengthYoutubeList()==0 && !youtubeExecutor.isExecuting()){
-//            Log.d("QuocSoundcloud", "onViewCreated: ignite the Executor");
-//            singletonExoPlayer.EndMusic();
-//            singletonExoPlayer.setType(nameOfCategory);
-//            youtubeExecutor.MusicAsyncExecutor(MusicQuery,new WeakReference<>(youtubeMusicModel),new WeakReference<>(NextSongNameTextView));
-//        }
         // This is to add the listener to the singletonExoPlayer to update the UI depending on the MediaItem
         // the reason why when you backstack and come to the the same layout , getting the title with no changes is that
         // the current exoplayer does not clear the mediaList and the listener bellow isn't invoked
@@ -288,15 +209,6 @@ public class music_fragment extends Fragment {
                 if(mediaItem != null && mediaItem.localConfiguration != null){
                     int curIndex = singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex();
                     YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
-//                    if(curIndex == youtubeMusicModel.getLengthYoutubeList())
-//                    {
-//                        youtubeMusicModel.AddMusicElement(element);
-//                        // The youtubeExecutor should have been designed as a singleton. I'm too lazy to repair it now because it affects the whole project =((((
-//                        // the bellow is the slight hack to fix the bug =(( But it's not an optimized approach to fix it.
-//                        // TODO: Change the YoutubeExecutor into the singleton if you can in the future.
-//                        if(curIndex +1 < singletonExoPlayer.getExoPlayer().getMediaItemCount())
-//                            youtubeMusicModel.AddMusicElement((YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getMediaItemAt(curIndex+1).localConfiguration.tag);
-//                    }
                     CurrentSongNameTextView.setText(element.getTitle());
                     Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
                     if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() < singletonExoPlayer.getExoPlayer().getMediaItemCount() -1){
@@ -381,24 +293,8 @@ public class music_fragment extends Fragment {
         SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
-//        List<String> titleSet = new ArrayList<>();
-//        List<String> urlSet = new ArrayList<>();
-//        List<String> idSet = new ArrayList<>();
-//        List<Integer> loveSet = new ArrayList<>();
-//        for(int i=0; i< exoPlayer.getMediaItemCount(); i++){
-//            Log.d("QuocBug", "onPause: ");
-//            YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(i).localConfiguration).tag;
-//            titleSet.add(element.getTitle());
-//            urlSet.add(element.getDownloadedMusicUrl());
-//            idSet.add(element.getMusicID());
-//            loveSet.add((element.isFavorite())? 1:0);
-//        }
         MediaItemPosition =exoPlayer.getCurrentMediaItemIndex();
         editor.putInt(home_fragment.LAST_EXOPOSITEM_STATE,MediaItemPosition);
-//        editor.putString(home_fragment.LAST_EXOTITLE_STATE,new JSONArray(titleSet).toString());
-//        editor.putString(home_fragment.LAST_EXOURL_STATE,new JSONArray(urlSet).toString());
-//        editor.putString(home_fragment.LAST_EXOID_STATE, new JSONArray(idSet).toString());
-//        editor.putString(home_fragment.LAST_EXOLOVE_STATE, new JSONArray(loveSet).toString());
         editor.apply();
 
     }

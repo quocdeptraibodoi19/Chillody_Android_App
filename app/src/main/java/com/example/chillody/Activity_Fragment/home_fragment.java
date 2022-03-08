@@ -47,6 +47,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+// lifecycle of fragment :
+/*
+* when we move the whole app into the background task -> then it will onpause, and then if we start it again it will go for onresume
+* note that the onresume will be invoked even when the fragment is started the first time.
+* when we move to another fragment or activity, if we backstack it will go from the onviewcreate first, then onviewcreated and onresume ....
+* */
 public class home_fragment extends Fragment {
     public final static String sharedFile ="com.example.chillody.Activity_Fragment";
     public final static String LAST_EXOTYPE_STATE = "NDQEXOPLAYERTYPE";
@@ -78,58 +84,6 @@ public class home_fragment extends Fragment {
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         exoPlayerType = sharedPreferences.getString(LAST_EXOTYPE_STATE,"");
         MediaItemPosition = sharedPreferences.getInt(LAST_EXOPOSITEM_STATE,0);
-        // This is to load data from the Shared Reference into the ExoPlayer instance:
-        // the if is to prevent the case when the configuration changes occur, the home_fragment recreate and it will automatically add data to the
-        // the current singleton exo ( which is still alive in spite of configuration changes)
-//        if(singletonExoPlayer.getExoPlayer().getMediaItemCount() == 0)
-//        {
-////            Log.d("QuocBug", "onCreate: inside the home_fragment ");
-////            JSONArray titleSet = null;
-////            JSONArray urlSet = null;
-////            JSONArray idSet = null;
-////            JSONArray loveSet = null;
-//            //                titleSet = new JSONArray(sharedPreferences.getString(LAST_EXOTITLE_STATE,"[]"));
-////                urlSet = new JSONArray(sharedPreferences.getString(LAST_EXOURL_STATE,"[]"));
-////                idSet = new JSONArray(sharedPreferences.getString(LAST_EXOID_STATE,"[]"));
-////                loveSet = new JSONArray(sharedPreferences.getString(LAST_EXOLOVE_STATE,"[]"));
-////                int length = Math.min(titleSet.length(),Math.min(urlSet.length(),idSet.length()));
-//            exoPlayerType = sharedPreferences.getString(LAST_EXOTYPE_STATE,"");
-//            MediaItemPosition = sharedPreferences.getInt(LAST_EXOPOSITEM_STATE,0);
-////                Log.d("QuocBug", "onCreate: The position is: "+ String.valueOf(MediaItemPosition));
-////                singletonExoPlayer.setType(exoPlayerType);
-////                Log.d("QuocBug", "onCreate: size of array"+String.valueOf(titleSet.length()));
-////                Log.d("QuocBug", "onCreate: size of loveSet "+String.valueOf(loveSet.length()));
-////                for(int i=0; i<length;i++){
-////                    if(titleSet.getString(i).equals("") || urlSet.getString(i).equals("") || idSet.getString(i).equals(""))
-////                    {
-////                        Log.d("QuocBug", "onCreate: SKIP Bugging: "+ titleSet.getString(i) +" "+ urlSet.getString(i) +" "+idSet.getString(i));
-////                        if(i == MediaItemPosition) {
-////                            Log.d("QuocBug", "onCreate: Bugging: "+ titleSet.getString(i) +" "+ urlSet.getString(i) +" "+idSet.getString(i));
-////                            MediaItemPosition = 0;
-////                        }
-////                        continue;
-////                    }
-////                    Log.d("QuocBug", "onCreate: The title: "+titleSet.getString(i));
-////                    Log.d("QuocBug", "onCreate: the url: "+ urlSet.getString(i));
-////                    Log.d("QuocBug", "onCreate: isLove: "+ String.valueOf(loveSet.getInt(i)));
-////                    MediaItem mediaItem = new MediaItem.Builder()
-////                            .setUri(urlSet.getString(i)).setTag(new YoutubeMusicElement(titleSet.getString(i), idSet.getString(i), urlSet.getString(i),loveSet.getInt(i)))
-////                            .build();
-////                    singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
-////                    if(MediaItemPosition == i) {
-////                        Log.d("QuocBug", "onCreate: Successfully update "+ String.valueOf(singletonExoPlayer.getExoPlayer().getMediaItemCount()-1));
-////                        MediaItemPosition = singletonExoPlayer.getExoPlayer().getMediaItemCount()-1;
-////                    }
-////                }
-////                if(singletonExoPlayer.getExoPlayer().getMediaItemCount() !=0)
-////                {
-////
-////                    Log.d("QuocBug", "onCreate: MediaItemPosition");
-////                    singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
-////                    singletonExoPlayer.getExoPlayer().prepare();
-////                    singletonExoPlayer.getExoPlayer().play();
-////                }
-//        }
     }
 
     @Override
@@ -148,6 +102,10 @@ public class home_fragment extends Fragment {
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
         generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
+
+        // !ishappen here is to restrict the condition such that the block code will be implemented only once at the intitial time
+        // otherwise, when it move to another activity and backstack again, this callback (onviewcreated will be invoked again) ... thus
+        // this method will be called again leading to it will register another observer to the data causing the malfunction of the app.
         if(!exoPlayerType.equals("") && !isHappenBefore){
             singletonExoPlayer.setType(exoPlayerType);
             Log.d("QuocKhung", "onViewCreated: ignite");
@@ -165,20 +123,16 @@ public class home_fragment extends Fragment {
             listSongs.observe(getViewLifecycleOwner(), new Observer<List<YoutubeMusicElement>>() {
                 @Override
                 public void onChanged(List<YoutubeMusicElement> youtubeMusicElements) {
+                    Log.d("PhuTest", "onChanged: dataset changes");
                     MediaItem item;
+                    // The reason why we need a list of items and address this problem this way is because of the magical behavior in which
+                    // when singleton.addMediaItem()... it invokes the onMediaItemTransition(). Unfortunately, this accidentally invokes
+                    // the method to load more song... ( please access ShindraTensei account and click the "muc da luu" category for more information)
                     List<MediaItem> items = new ArrayList<>();
                     for(int i=0; i< youtubeMusicElements.size(); i++){
                         item = new MediaItem.Builder().setUri(youtubeMusicElements.get(i).getDownloadedMusicUrl())
                                 .setTag(youtubeMusicElements.get(i)).build();
                         items.add(item);
-//                        singletonExoPlayer.getExoPlayer().addMediaItem(item);
-//                        singletonExoPlayer.getExoPlayer().prepare();
-//                        Log.d("PhuTest", "onChanged: link of "+ String.valueOf(i)+" link: " + youtubeMusicElements.get(i).getDownloadedMusicUrl() );
-//                        if(i == MediaItemPosition){
-//                            Log.d("PhuTest", "onChanged: starting the list: "+ String.valueOf(i));
-//                            singletonExoPlayer.getExoPlayer().seekTo(i,0);
-//                            singletonExoPlayer.getExoPlayer().play();
-//                        }
                     }
                     singletonExoPlayer.getExoPlayer().addMediaItems(items);
                     singletonExoPlayer.getExoPlayer().prepare();
@@ -199,32 +153,12 @@ public class home_fragment extends Fragment {
         categoryAdapter.setCategoryObjList(categoryObjList);
         binding.recyclerView.setAdapter(categoryAdapter);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
-        //new MusicQuoteAsyncTask(binding.MusicQuoteID,binding.ArtistID,binding.getRoot().getContext()).execute();
         titleTrackTextview = binding.styledPlayerControlView.findViewById(R.id.titletrackID);
         RedHeartIcon = binding.styledPlayerControlView.findViewById(R.id.heartREDbtnID);
         WhiteHeartIcon = binding.styledPlayerControlView.findViewById(R.id.heartbtnID);
 
         favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
         Log.d("QuocBug", "onViewCreated: in the home_fragment of the onviewcreated");
-        MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
-        // This is to update the UI, sync the data of ExoPlayer of category fragment into this fragment
-        if(item != null && item.localConfiguration != null ){
-            YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
-            titleTrackTextview.setText(element.getTitle());
-            if(element.isFavorite()){
-                RedHeartIcon.setVisibility(View.VISIBLE);
-                WhiteHeartIcon.setVisibility(View.GONE);
-            }
-            // Not checking else condition here because by default, the RedHeardIcon is set to Gone.
-        }
-        if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1 && !singletonExoPlayer.isThreadProcessing()){
-            if(singletonExoPlayer.getType().contains("Love")) return;
-            Log.d("QuocMusic", "onViewCreated: The pos song is: "+ String.valueOf(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex()));
-            Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
-            Log.d("QuocMusic", "onViewCreated: The total sum is: "+ String.valueOf(singletonExoPlayer.getExoPlayer().getMediaItemCount()));
-            YoutubeMusicElement LastElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
-            new YoutubeExecutor(getActivity().getApplication()).MusicRecommendingExecutor(singletonExoPlayer.getType(),LastElement.getMusicID(),null);
-        }
         WhiteHeartIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -309,41 +243,28 @@ public class home_fragment extends Fragment {
         Log.d("QuocLife", "HomeFragment: onPause: ");
         SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        // This is to save the last state of ExoPlayer instance
-//        List<String> titleSet = new ArrayList<>();
-//        List<String> urlSet = new ArrayList<>();
-//        List<String> idSet = new ArrayList<>();
-//        List<Integer> loveSet = new ArrayList<>();
        ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
        exoPlayerType = SingletonExoPlayer.getInstance(getActivity().getApplication()).getType();
-//       for(int i=0; i< exoPlayer.getMediaItemCount(); i++){
-//           YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(i).localConfiguration).tag;
-//            titleSet.add(element.getTitle());
-//           Log.d("QuocBug", "onPause: "+ element.getTitle());
-//           Log.d("QuocBug","onPause: + url: "+ element.getDownloadedMusicUrl());
-//           urlSet.add(element.getDownloadedMusicUrl());
-//            idSet.add(element.getMusicID());
-//            loveSet.add((element.isFavorite())? 1:0);
-//       }
        MediaItemPosition =exoPlayer.getCurrentMediaItemIndex();
        editor.putInt(LAST_EXOPOSITEM_STATE,MediaItemPosition);
         Log.d("QuocBug", "onPause: MediaPosition: "+String.valueOf(MediaItemPosition));
-//       editor.putString(LAST_EXOID_STATE,new JSONArray(idSet).toString());
-//       editor.putString(LAST_EXOTITLE_STATE,new JSONArray(titleSet).toString());
-//       editor.putString(LAST_EXOURL_STATE,new JSONArray(urlSet).toString());
        editor.putString(LAST_EXOTYPE_STATE,exoPlayerType);
-//       editor.putString(LAST_EXOLOVE_STATE,new JSONArray(loveSet).toString());
        editor.apply();
     }
     @Override
     public void onResume() {
         super.onResume();
         Log.d("QuocLife", "HomeFragment: onResume: "+ String.valueOf(isHappenBefore));
+        // isHappenBefore is to restrict this callback to not be called at the first time( because as mentioned above, when the system first create this fragment , the onresume() is still called)
         if(isHappenBefore){
             Log.d("QuocLife", "onResume: Inside resume");
               SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
               binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
               MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+            // This is to update the UI, sync the data of ExoPlayer of category fragment into this fragment
+            // this method is for the case in which we are listening to the music in the music-fragment until it move to the next song (we wait a couple seconds
+            // before backstacking it) -> this case the onMediaitemtransition will not be invoked (the onresumed will be called again and ishappenhere is true therefore, it will implement inside the block so we put this block at here)-> cannot update the UI
+            // This method is for that case -> to update UI and do some operation i.e it plays a role as the onMediatItemTransition() (because in this case this listener cannot be heard)
               if(item != null && item.localConfiguration != null)
               {
                   YoutubeMusicElement currentElement = (YoutubeMusicElement) item.localConfiguration.tag;
