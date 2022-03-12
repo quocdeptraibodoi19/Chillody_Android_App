@@ -69,7 +69,7 @@ public class music_fragment extends Fragment {
         switch (nameOfCategory){
             case "Chilling":
                 ImgQuery = "sadness city";
-                MusicQuery = "Em Về Tình Khôi / Hali (Acoustic Cover)\n";
+                MusicQuery = "Ta da tung yeu nhau chua hao\n";
                 break;
             case "Ghibli":
                 ImgQuery = "kyoto";
@@ -191,16 +191,34 @@ public class music_fragment extends Fragment {
             @Override
             public void onPlayerError(@NonNull PlaybackException error) {
              // error occurs
-                Throwable cause = error.getCause();
-                if (cause instanceof HttpDataSource.HttpDataSourceException) {
-                    HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
-                    if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
-                        Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
-                        Log.d("QuocBug", "onPlayerError: the link is error");
-                        generalYoutubeViewModel.deleteSongMusicType(singletonExoPlayer.getType());
-                        singletonExoPlayer.EndMusic();
-                        youtubeExecutor.MusicAsyncExecutor(nameOfCategory,MusicQuery,new WeakReference<>(NextSongNameTextView));
+                Log.d("QuocBug", "onPlayerError: PLAYERERROR IN MUSIC_FRAGMENT");
+                Log.d("QuocBug", "onPlayerError: error name"+ error.getErrorCodeName());
+                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+                if(item != null && item.localConfiguration != null){
+                    YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                    Throwable cause = error.getCause();
+                    if (cause instanceof HttpDataSource.HttpDataSourceException) {
+                        Log.d("QuocBug", "onPlayerError: In the outer condition of the playerError");
+                        HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
+                        if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
+                            Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
+                            Log.d(" QuocBug", "onPlayerError: the link is error");
+                            youtubeExecutor.failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                        }
                     }
+                    // this just for the education purpose, the more efficient approach to this problem is to
+                    // catch all errors regardless of its errorCode ... to load again and again
+                    else if(error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND){
+                        Log.d("QuocBug", "onPlayerError: Inside the Playback exception: ERROR_CODE_IO_FILE_NOT_FOUND");
+                        Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
+                        youtubeExecutor.failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                    }
+                }
+                // this when there is no item in the current position.
+                // because after the mediaItem is in the ready state and play state, this method is invoked
+                // therefore, theoretically this else is not gonna happen.
+                else{
+                    Log.d("QuocBug", "onPlayerError: no item in the current position");
                 }
             }
             @Override

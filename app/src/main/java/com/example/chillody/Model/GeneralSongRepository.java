@@ -57,4 +57,34 @@ public class GeneralSongRepository {
         });
         service.shutdown();
     }
+    public void updateLikeMusicElement(YoutubeMusicElement element){
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        service.execute(new Runnable() {
+            @Override
+            public void run() {
+                youtubeMusicDao.UpdateLikeMusicElement(element.getMusicID());
+            }
+        });
+        service.shutdown();
+    }
+    public  void updateDislikeMusicElement(YoutubeMusicElement element){
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        service.execute(new Runnable() {
+            @Override
+            public void run() {
+                youtubeMusicDao.UpdateDisLikeMusicElement(element.getMusicID());
+            }
+        });
+        service.shutdown();
+    }
+    public void updateDislikeMusicElement(String songID){
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        service.execute(new Runnable() {
+            @Override
+            public void run() {
+                youtubeMusicDao.UpdateDisLikeMusicElement(songID);
+            }
+        });
+        service.shutdown();
+    }
 }

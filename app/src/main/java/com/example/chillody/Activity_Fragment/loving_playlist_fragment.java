@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import com.example.chillody.Adapter.FavPageAdapter;
 import com.example.chillody.Model.FavoriteYoutubeElement;
+import com.example.chillody.Model.GeneralYoutubeViewModel;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
 import com.example.chillody.Networking.YoutubeExecutor;
@@ -47,6 +49,7 @@ public class loving_playlist_fragment extends Fragment {
     private SharedPreferences sharedPreferences;
     private SingletonExoPlayer singletonExoPlayer;
     private ImageView WhiteLoveBtn, RedLoveBtn;
+    private GeneralYoutubeViewModel generalYoutubeViewModel;
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -62,7 +65,7 @@ public class loving_playlist_fragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Log.d("QuocBug", "onCreateView: create the fragment");
+        Log.d("QuocLovingPlaylist", "onCreateView: create the fragment");
         singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         binding = LovingPlaylistFragmentLayoutBinding.inflate(inflater,container,false);
         return binding.getRoot();
@@ -71,15 +74,16 @@ public class loving_playlist_fragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.d("QuocLovingPlaylist", "onViewCreated: create the fragment");
         binding.lovingplayliststyledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
         titleTrackTextview = binding.lovingplayliststyledPlayerControlView.findViewById(R.id.titletrackID);
         WhiteLoveBtn = binding.lovingplayliststyledPlayerControlView.findViewById(R.id.heartbtnID);
         RedLoveBtn = binding.lovingplayliststyledPlayerControlView.findViewById(R.id.heartREDbtnID);
-
+        generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         // Processing the TabLayout
         binding.tablayoutID.addTab(binding.tablayoutID.newTab().setText("Favorite Songs"));
         binding.tablayoutID.addTab(binding.tablayoutID.newTab().setText("Favorite Images"));
-        FavPageAdapter favPageAdapter = new FavPageAdapter(Objects.requireNonNull(getActivity()).getSupportFragmentManager(),binding.tablayoutID.getTabCount());
+        FavPageAdapter favPageAdapter = new FavPageAdapter(Objects.requireNonNull(getActivity()).getSupportFragmentManager(),binding.tablayoutID.getTabCount(),titleTrackTextview);
         binding.viewpagerID.setAdapter(favPageAdapter);
         // There are 2 listeners for the Tab and its corresponding content layout
         binding.viewpagerID.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tablayoutID));
@@ -110,6 +114,7 @@ public class loving_playlist_fragment extends Fragment {
                     // this is so magic.. I imagine that it's just a hashed object.
                     element.setFavorite(true);
                     home_fragment.favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), singletonExoPlayer.getType()+"Love"));
+                    generalYoutubeViewModel.updateLikeSong(element);
                 }
             }
         });
@@ -122,6 +127,7 @@ public class loving_playlist_fragment extends Fragment {
                 YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                 element.setFavorite(false);
                 home_fragment.favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), singletonExoPlayer.getType()+"Love"));
+                generalYoutubeViewModel.updateDislikeMusicElement(element);
             }
         });
         MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
@@ -152,17 +158,11 @@ public class loving_playlist_fragment extends Fragment {
         listener = new Player.Listener() {
             @Override
             public void onPlayerError(@NonNull PlaybackException error) {
-                // error occurs
-                Throwable cause = error.getCause();
-                if (cause instanceof HttpDataSource.HttpDataSourceException) {
-                    HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
-                    if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
-                        Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
-                        Log.d("QuocBug", "onPlayerError: the link is error");
-                        singletonExoPlayer.EndMusic();
-                        Toast.makeText(binding.getRoot().getContext(), "Error occurs", Toast.LENGTH_SHORT).show();
-                        titleTrackTextview.setText(R.string.NoSong_Notification);
-                    }
+                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+                if(item!= null && item.localConfiguration != null){
+                    YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                    Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
+                    new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
                 }
             }
             @Override
@@ -170,6 +170,10 @@ public class loving_playlist_fragment extends Fragment {
                 if(mediaItem != null && mediaItem.localConfiguration != null){
                     YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
                     titleTrackTextview.setText(element.getTitle());
+                    if(!element.isFavorite()){
+                        RedLoveBtn.setVisibility(View.GONE);
+                        WhiteLoveBtn.setVisibility(View.VISIBLE);
+                    }
                 }
                 if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
                     if(singletonExoPlayer.getType().contains("Love")) return;
@@ -188,7 +192,8 @@ public class loving_playlist_fragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        singletonExoPlayer.getExoPlayer().removeListener(listener);
+        Log.d("QuocLovingPlaylist", "onPause: Pausing");
+//        singletonExoPlayer.getExoPlayer().removeListener(listener);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         // This is to save the last state of ExoPlayer instance
         Set<String> titleSet = new LinkedHashSet<>();
@@ -207,9 +212,6 @@ public class loving_playlist_fragment extends Fragment {
         int MediaItemPosition =exoPlayer.getCurrentMediaItemIndex();
         editor.putInt(home_fragment.LAST_EXOPOSITEM_STATE,MediaItemPosition);
         Log.d("QuocBug", "onPause: MediaPosition: "+String.valueOf(MediaItemPosition));
-        editor.putString(home_fragment.LAST_EXOID_STATE,new JSONArray(idSet).toString());
-        editor.putString(home_fragment.LAST_EXOTITLE_STATE,new JSONArray(titleSet).toString());
-        editor.putString(home_fragment.LAST_EXOURL_STATE,new JSONArray(urlSet).toString());
         editor.putString(home_fragment.LAST_EXOTYPE_STATE,exoPlayerType);
         editor.apply();
     }
@@ -217,12 +219,17 @@ public class loving_playlist_fragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        Log.d("QuocLovingPlaylist", "onResume: Resume");
         if(isHappenBefore){
             MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
             // This is to update the UI, sync the data of ExoPlayer of category fragment into this fragment
             if(item != null && item.localConfiguration != null){
                 YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                 titleTrackTextview.setText(element.getTitle());
+                if(!element.isFavorite()){
+                    RedLoveBtn.setVisibility(View.GONE);
+                    WhiteLoveBtn.setVisibility(View.VISIBLE);
+                }
             }
             if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1 && !singletonExoPlayer.isThreadProcessing()){
                 if(singletonExoPlayer.getType().contains("Love")) return;
@@ -230,7 +237,7 @@ public class loving_playlist_fragment extends Fragment {
                 YoutubeMusicElement LastElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration).tag;
                 new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
             }
-            singletonExoPlayer.getExoPlayer().addListener(listener);
+//            singletonExoPlayer.getExoPlayer().addListener(listener);
         }
         isHappenBefore = true;
     }
@@ -238,6 +245,9 @@ public class loving_playlist_fragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("QuocTest", "onDestroy: onplaylist");
+        Log.d("QuocLovingPlaylist", "onDestroy: Destroy");
+        if(singletonExoPlayer.getExoPlayer() != null)
+        singletonExoPlayer.getExoPlayer().removeListener(listener);
+
     }
 }

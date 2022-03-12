@@ -10,7 +10,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.chillody.Model.FavSongRepository;
+import com.example.chillody.Model.FavoriteYoutubeElement;
 import com.example.chillody.Model.GeneralSongRepository;
+import com.example.chillody.Model.GeneralYoutubeViewModel;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -47,12 +50,15 @@ import okhttp3.Response;
 public class YoutubeExecutor  {
     private final static int EXE_SONG_MESSAGE = 4124456;
     private final static int EXE_RECOMMEND_SONG_MESSAGE = 11012031;
+    private final static int EXE_FAILURE_SONG_MESSAGE = 1120231247;
     private final SingletonExoPlayer singletonExoPlayer;
     private ExecutorService executorService;
-    private GeneralSongRepository repository;
+    private final GeneralSongRepository repository;
+    private final FavSongRepository favSongRepository;
     public YoutubeExecutor(@NonNull Application application) {
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
         repository =  new GeneralSongRepository(application);
+        favSongRepository = new FavSongRepository(application);
     }
     public void MusicAsyncExecutor(String musicType,String query, WeakReference<TextView>NextSongTitle){
         singletonExoPlayer.setThreadProcessing(true);
@@ -77,7 +83,7 @@ public class YoutubeExecutor  {
                            // Log.d("QuocPhu", "handleMessage: Flag: "+ String.valueOf(singletonExoPlayer.getUIUpdatingFlag()) +" current pos: "+String.valueOf(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex()));
                             Log.d("QuocPhu", "handleMessage: Update the name of next song: "+ element[0].getTitle());
                             singletonExoPlayer.setUIUpdatingFlag(-1);
-                            if(NextSongTitle.get() != null)
+                            if(NextSongTitle != null)
                                 NextSongTitle.get().setText(element[0].getTitle());
                         }
                     if(msg.arg1 == lastUpdate)
@@ -116,7 +122,7 @@ public class YoutubeExecutor  {
                         Log.d("YouBug", "run: "+ title);
                         songId = searchedSongsArray.getJSONObject(i - lastUpdate).getString("id");
                         Log.d("YouBug", "run: "+ songId);
-                        // To get the mp4 form from the ID of the youtube ID
+                        // To get the mp3 form from the ID of the youtube ID
                         client = new OkHttpClient();
                         request = new Request.Builder()
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
@@ -165,7 +171,7 @@ public class YoutubeExecutor  {
                     if(singletonExoPlayer.getUIUpdatingFlag()!= -1 && singletonExoPlayer.getUIUpdatingFlag() == exoPlayer.getMediaItemCount()-1)
                         {
                             singletonExoPlayer.setUIUpdatingFlag(-1);
-                            if(NextSongTitle.get() != null)
+                            if(NextSongTitle != null)
                                 NextSongTitle.get().setText(element[0].getTitle());
                         }
                     repository.insertNewSong(element[0]);
@@ -182,7 +188,7 @@ public class YoutubeExecutor  {
                         .url("https://youtube-search6.p.rapidapi.com/video/recommendation/?videoId="+lastSongID)
                         .get()
                         .addHeader("x-rapidapi-host", "youtube-search6.p.rapidapi.com")
-                        .addHeader("x-rapidapi-key", "6a655d9ce0msh5aba6c4c06f354cp11ae4djsn6e2e8d622ce6")
+                        .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
                         .build();
 
                 try {
@@ -195,7 +201,7 @@ public class YoutubeExecutor  {
                     for(int i=lastIndexOfSong;i<lastIndexOfSong+2;i++){
                         title = SongArray.getJSONObject(i - lastIndexOfSong).getString("title");
                         songId = SongArray.getJSONObject(i - lastIndexOfSong).getString("video_id");
-                        // To get the mp4 form from the ID of the youtube ID
+                        // To get the mp3 form from the ID of the youtube ID
                         Log.d("QuocMusic", "run: the title is: "+ title);
                         client = new OkHttpClient();
                         request = new Request.Builder()
@@ -225,4 +231,53 @@ public class YoutubeExecutor  {
         return executorService != null;
     }
 
+    // if failure happens, this will ignite in order to reload the url.
+    public void failHandlingSong(String ID, int position){
+
+        ExoPlayer player = singletonExoPlayer.getExoPlayer();
+        ExecutorService service = Executors.newFixedThreadPool(1);
+        Handler handler = new Handler(Looper.getMainLooper()){
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                if(msg.what == EXE_FAILURE_SONG_MESSAGE){
+                    player.getMediaItemAt(position);
+                    if(player.getMediaItemAt(position).localConfiguration != null){
+                       YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(player.getMediaItemAt(position).localConfiguration).tag;
+                       element.setDownloadedMusicUrl((String) msg.obj);
+                       // This is for the favorite loving music is stored in another table... therefore, we have to check for the suitable database.
+                       if(!element.getMusicType().contains("Love"))
+                            repository.insertNewSong(element);
+                       else
+                           favSongRepository.InsertSongElement(new FavoriteYoutubeElement(element.getMusicID(),(String) msg.obj,element.getTitle(), element.getMusicType()));
+                       player.prepare();
+                    }
+                }
+            }
+        };
+        service.execute(new Runnable() {
+            @Override
+            public void run() {
+                // get mp3 from ID
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .url("https://youtube-mp36.p.rapidapi.com/dl?id="+ID)
+                        .get()
+                        .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
+                        .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
+                        .build();
+
+                try {
+                    // this is done synchronously ( note that synchronous process must be done in the worker thread).
+                    Response response = client.newCall(request).execute();
+                    String songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
+                    Message message = new Message();
+                    message.what = EXE_FAILURE_SONG_MESSAGE;
+                    message.obj = songUrl;
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 }

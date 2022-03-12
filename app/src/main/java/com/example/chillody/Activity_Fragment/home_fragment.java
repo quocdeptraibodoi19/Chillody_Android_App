@@ -31,21 +31,15 @@ import com.example.chillody.Model.categoryObj;
 import com.example.chillody.Networking.YoutubeExecutor;
 import com.example.chillody.R;
 import com.example.chillody.databinding.HomeLayoutFragmentBinding;
+import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 // lifecycle of fragment :
 /*
@@ -56,11 +50,7 @@ import java.util.Set;
 public class home_fragment extends Fragment {
     public final static String sharedFile ="com.example.chillody.Activity_Fragment";
     public final static String LAST_EXOTYPE_STATE = "NDQEXOPLAYERTYPE";
-    public final static String LAST_EXOID_STATE = "NDQEXOPLAYERIDSTATE";
-    public final static String LAST_EXOURL_STATE = "NDQEXOPLAYERURLSTATE";
-    public final static String LAST_EXOTITLE_STATE = "NDQEXOPLAYERTITLESTATE";
     public final static String LAST_EXOPOSITEM_STATE = "NDQEXOPLAYERITEMPOSITIONSTATE";
-    public final static String LAST_EXOLOVE_STATE = "NDQEXOPLAYERLOVINGSTATE";
     private SharedPreferences sharedPreferences;
     private GeneralYoutubeViewModel generalYoutubeViewModel;
     private final List<categoryObj> categoryObjList = new ArrayList<>();
@@ -81,7 +71,6 @@ public class home_fragment extends Fragment {
         categoryObjList.add(new categoryObj("Chilling","https://c0.wallpaperflare.com/preview/259/493/306/person-car-cloud-sunset.jpg"));
         categoryObjList.add(new categoryObj("Cafe","https://c4.wallpaperflare.com/wallpaper/805/668/874/lofi-neon-coffee-house-shop-neon-glow-hd-wallpaper-preview.jpg"));
         categoryObjList.add(new categoryObj("Ghibli","https://studioghiblimovies.com/wp-content/uploads/2020/03/barcode-scanners-qr-code-2d-code-creative-barcode.jpg"));
-        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         exoPlayerType = sharedPreferences.getString(LAST_EXOTYPE_STATE,"");
         MediaItemPosition = sharedPreferences.getInt(LAST_EXOPOSITEM_STATE,0);
     }
@@ -106,7 +95,7 @@ public class home_fragment extends Fragment {
         // !ishappen here is to restrict the condition such that the block code will be implemented only once at the intitial time
         // otherwise, when it move to another activity and backstack again, this callback (onviewcreated will be invoked again) ... thus
         // this method will be called again leading to it will register another observer to the data causing the malfunction of the app.
-        if(!exoPlayerType.equals("") && !isHappenBefore){
+        if(!exoPlayerType.equals("") && !exoPlayerType.contains("Love") && !isHappenBefore){
             singletonExoPlayer.setType(exoPlayerType);
             Log.d("QuocKhung", "onViewCreated: ignite");
             switch(exoPlayerType){
@@ -124,20 +113,29 @@ public class home_fragment extends Fragment {
                 @Override
                 public void onChanged(List<YoutubeMusicElement> youtubeMusicElements) {
                     Log.d("PhuTest", "onChanged: dataset changes");
-                    MediaItem item;
-                    // The reason why we need a list of items and address this problem this way is because of the magical behavior in which
-                    // when singleton.addMediaItem()... it invokes the onMediaItemTransition(). Unfortunately, this accidentally invokes
-                    // the method to load more song... ( please access ShindraTensei account and click the "muc da luu" category for more information)
-                    List<MediaItem> items = new ArrayList<>();
-                    for(int i=0; i< youtubeMusicElements.size(); i++){
-                        item = new MediaItem.Builder().setUri(youtubeMusicElements.get(i).getDownloadedMusicUrl())
-                                .setTag(youtubeMusicElements.get(i)).build();
-                        items.add(item);
+                    if(singletonExoPlayer.getExoPlayer().getMediaItemCount() != youtubeMusicElements.size())
+                    {
+                        MediaItem item;
+                        // The reason why we need a list of items and address this problem this way is because of the magical behavior in which
+                        // when singleton.addMediaItem()... it invokes the onMediaItemTransition(). Unfortunately, this accidentally invokes
+                        // the method to load more song... ( please access ShindraTensei account and click the "muc da luu" category for more information)
+                        List<MediaItem> items = new ArrayList<>();
+                        for(int i=0; i< youtubeMusicElements.size(); i++){
+                            item = new MediaItem.Builder().setUri(youtubeMusicElements.get(i).getDownloadedMusicUrl())
+                                    .setTag(youtubeMusicElements.get(i)).build();
+                            items.add(item);
+                        }
+                        singletonExoPlayer.getExoPlayer().addMediaItems(items);
+                        singletonExoPlayer.getExoPlayer().prepare();
+                        singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
+                        singletonExoPlayer.getExoPlayer().play();
                     }
-                    singletonExoPlayer.getExoPlayer().addMediaItems(items);
-                    singletonExoPlayer.getExoPlayer().prepare();
-                    singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
-                    singletonExoPlayer.getExoPlayer().play();
+                    else if(singletonExoPlayer.getExoPlayer().getMediaItemCount() !=0)
+                    {
+                        MediaItem  item = singletonExoPlayer.getExoPlayer().getMediaItemAt(singletonExoPlayer.getExoPlayer().getMediaItemCount()-1);
+                        YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                        Log.d("PhuTest", "onChanged: The newly added song is: "+ element.getTitle());
+                    }
                 }
             });
         }
@@ -172,12 +170,14 @@ public class home_fragment extends Fragment {
                     element.setFavorite(true);
                     Log.d("QuocBug", "onClick: whiteheart click: "+element.getTitle());
                     favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), singletonExoPlayer.getType()+"Love"));
+                    generalYoutubeViewModel.updateLikeSong(element);
                 }
             }
         });
         RedHeartIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("QuocClick", "onClick: HOME");
                 WhiteHeartIcon.setVisibility(View.VISIBLE);
                 RedHeartIcon.setVisibility(View.GONE);
                 MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
@@ -187,26 +187,44 @@ public class home_fragment extends Fragment {
                 YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                 element.setFavorite(false);
                 favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), singletonExoPlayer.getType()+"Love"));
+                generalYoutubeViewModel.updateDislikeMusicElement(element);
             }
         });
         listener = new Player.Listener() {
             @Override
             public void onPlayerError(@NonNull PlaybackException error) {
                 // error occurs
-                Throwable cause = error.getCause();
-                if (cause instanceof HttpDataSource.HttpDataSourceException) {
-                    HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
-                    if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
-                        Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
-                        Log.d("QuocBug", "onPlayerError: the link is error");
-                        generalYoutubeViewModel.deleteSongMusicType(singletonExoPlayer.getType());
-                        singletonExoPlayer.EndMusic();
-                        Toast.makeText(binding.getRoot().getContext(), "Error occurs", Toast.LENGTH_SHORT).show();
-                        titleTrackTextview.setText(R.string.NoSong_Notification);
-                        RedHeartIcon.setVisibility(View.GONE);
-                        WhiteHeartIcon.setVisibility(View.VISIBLE);
-                    }
+                // if this happens ... it will reload the list regardless of what type of error it is
+                //this maybe the very bad implementation but who knows :>>
+                Log.d("QuocBug", "onPlayerError: error name"+ error.getErrorCodeName());
+                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+                if(item!= null && item.localConfiguration != null){
+                    YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                    Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
+                    new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
                 }
+//                generalYoutubeViewModel.deleteSongMusicType(singletonExoPlayer.getType());
+//                singletonExoPlayer.EndMusic();
+//                Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
+//                titleTrackTextview.setText(R.string.NoSong_Notification);
+//                RedHeartIcon.setVisibility(View.GONE);
+//                WhiteHeartIcon.setVisibility(View.VISIBLE);
+//                new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong();
+//                Throwable cause = error.getCause();
+//                if (cause instanceof HttpDataSource.HttpDataSourceException) {
+//                    HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
+//                    if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
+//                        Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
+//                        Log.d("QuocBug", "onPlayerError: the link is error");
+//                        generalYoutubeViewModel.deleteSongMusicType(singletonExoPlayer.getType());
+//                        singletonExoPlayer.EndMusic();
+//                        Toast.makeText(binding.getRoot().getContext(), "Error occurs", Toast.LENGTH_SHORT).show();
+//                        titleTrackTextview.setText(R.string.NoSong_Notification);
+//                        RedHeartIcon.setVisibility(View.GONE);
+//                        WhiteHeartIcon.setVisibility(View.VISIBLE);
+//
+//                    }
+//                }
             }
             @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
@@ -278,12 +296,6 @@ public class home_fragment extends Fragment {
                       WhiteHeartIcon.setVisibility(View.VISIBLE);
                   }
               }
-             // This is to update the UI, sync the data of ExoPlayer of category fragment into this fragment
-            // remember that this has singleton.isprocesisng() that i do not know the purpose
-            if(item != null && item.localConfiguration != null){
-                YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
-                titleTrackTextview.setText(element.getTitle());
-            }
             if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1 && !singletonExoPlayer.isThreadProcessing()){
                 if(singletonExoPlayer.getType().contains("Love")) return;
                 Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");

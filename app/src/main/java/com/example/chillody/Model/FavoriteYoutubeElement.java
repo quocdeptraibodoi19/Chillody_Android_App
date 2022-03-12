@@ -64,6 +64,6 @@ public class FavoriteYoutubeElement {
         return type;
     }
     public YoutubeMusicElement getYoutubeMusicElement(){
-        return new YoutubeMusicElement(getTitle(),getMusicID(),getDownloadedMusicUrl());
+        return new YoutubeMusicElement(getTitle(),getMusicID(),getDownloadedMusicUrl(),1);
     }
 }

@@ -13,11 +13,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.chillody.Adapter.FavSongAdapter;
 import com.example.chillody.Model.FavoriteYoutubeElement;
 import com.example.chillody.Model.FavoriteYoutubeViewModel;
 import com.example.chillody.Model.GeneralYoutubeViewModel;
+import com.example.chillody.Model.YoutubeMusicModel;
 import com.example.chillody.databinding.FavMusicLayoutBinding;
 
 import java.util.List;
@@ -27,7 +30,10 @@ import java.util.Objects;
 public class Fav_Music_fragment extends Fragment {
     private FavMusicLayoutBinding binding;
     private FavSongAdapter ChillingAdapter,CafeAdapter,GhibliAdapter;
-    private FavoriteYoutubeViewModel favoriteYoutubeViewModel;
+    private final TextView NameSong;
+    public Fav_Music_fragment(TextView nameSong){
+        this.NameSong = nameSong;
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,17 +50,18 @@ public class Fav_Music_fragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
+        FavoriteYoutubeViewModel favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
+        GeneralYoutubeViewModel generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         Log.d("QuocMusicFragment", "onViewCreated: Creating");
-        ChillingAdapter = new FavSongAdapter(binding.getRoot().getContext(), Objects.requireNonNull(getActivity()).getApplication(), favoriteYoutubeViewModel);
+        ChillingAdapter = new FavSongAdapter(binding.getRoot().getContext(), Objects.requireNonNull(getActivity()).getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong);
         binding.ChillingfavmusiclistID.setAdapter(ChillingAdapter);
         binding.ChillingfavmusiclistID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 
-        CafeAdapter = new FavSongAdapter(binding.getRoot().getContext(),getActivity().getApplication(), favoriteYoutubeViewModel);
+        CafeAdapter = new FavSongAdapter(binding.getRoot().getContext(),getActivity().getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong);
         binding.CafefavmusiclistID.setAdapter(CafeAdapter);
         binding.CafefavmusiclistID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 
-        GhibliAdapter = new FavSongAdapter(binding.getRoot().getContext(),getActivity().getApplication(), favoriteYoutubeViewModel);
+        GhibliAdapter = new FavSongAdapter(binding.getRoot().getContext(),getActivity().getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong);
         binding.GhiblifavmusiclistID.setAdapter(GhibliAdapter);
         binding.GhiblifavmusiclistID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 
@@ -91,4 +98,17 @@ public class Fav_Music_fragment extends Fragment {
     // this just a fragment living in the adapter ... therefore, when it's canceled out... it will not invoke
     // the onDestroy() ... Why it leads to this still remains mysterious.
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d("QuocMusicFragment", "onPause: Pausing");
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("QuocMusicFragment", "onResume: Resumming");
+
+    }
 }

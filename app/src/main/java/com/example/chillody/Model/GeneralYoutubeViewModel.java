@@ -32,4 +32,13 @@ public class GeneralYoutubeViewModel extends AndroidViewModel {
     public void deleteSongMusicType(String type){
         repository.deleteSongMusicType(type);
     }
+    public void updateLikeSong(YoutubeMusicElement element){
+        repository.updateLikeMusicElement(element);
+    }
+    public void updateDislikeMusicElement(YoutubeMusicElement element){
+        repository.updateDislikeMusicElement(element);
+    }
+    public void updateDislikeMusicElement(String songID){
+        repository.updateDislikeMusicElement(songID);
+    }
 }
