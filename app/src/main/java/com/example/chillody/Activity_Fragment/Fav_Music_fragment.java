@@ -31,8 +31,11 @@ public class Fav_Music_fragment extends Fragment {
     private FavMusicLayoutBinding binding;
     private FavSongAdapter ChillingAdapter,CafeAdapter,GhibliAdapter;
     private final TextView NameSong;
-    public Fav_Music_fragment(TextView nameSong){
+    private final ImageView redBtn,whiteBtn;
+    public Fav_Music_fragment(TextView nameSong,ImageView whiteBtn,ImageView redBtn){
         this.NameSong = nameSong;
+        this.redBtn = redBtn;
+        this.whiteBtn = whiteBtn;
     }
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,15 +56,15 @@ public class Fav_Music_fragment extends Fragment {
         FavoriteYoutubeViewModel favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
         GeneralYoutubeViewModel generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         Log.d("QuocMusicFragment", "onViewCreated: Creating");
-        ChillingAdapter = new FavSongAdapter(binding.getRoot().getContext(), Objects.requireNonNull(getActivity()).getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong);
+        ChillingAdapter = new FavSongAdapter(binding.getRoot().getContext(), Objects.requireNonNull(getActivity()).getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong,whiteBtn,redBtn);
         binding.ChillingfavmusiclistID.setAdapter(ChillingAdapter);
         binding.ChillingfavmusiclistID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 
-        CafeAdapter = new FavSongAdapter(binding.getRoot().getContext(),getActivity().getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong);
+        CafeAdapter = new FavSongAdapter(binding.getRoot().getContext(),getActivity().getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong,whiteBtn,redBtn);
         binding.CafefavmusiclistID.setAdapter(CafeAdapter);
         binding.CafefavmusiclistID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 
-        GhibliAdapter = new FavSongAdapter(binding.getRoot().getContext(),getActivity().getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong);
+        GhibliAdapter = new FavSongAdapter(binding.getRoot().getContext(),getActivity().getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong,whiteBtn,redBtn);
         binding.GhiblifavmusiclistID.setAdapter(GhibliAdapter);
         binding.GhiblifavmusiclistID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 

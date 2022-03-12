@@ -11,4 +11,5 @@
     <string name="ghibli">Ghibli</string>
     <string name="exo_duration_time_str">4:32</string>
     <string name="exo_position_time_string">0:00</string>
+    <string name="no_song_slogan">No Song In The List</string>
 </resources>

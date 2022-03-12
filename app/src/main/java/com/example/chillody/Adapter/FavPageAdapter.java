@@ -14,16 +14,19 @@ import com.example.chillody.Activity_Fragment.Fav_Music_fragment;
 
 public class FavPageAdapter extends FragmentStatePagerAdapter {
     private final int count;
-    private TextView NameSong;
-    public FavPageAdapter(@NonNull FragmentManager fm, int behavior,TextView nameSong) {
+    private final TextView NameSong;
+    private final ImageView whiteBtn, redBtn;
+    public FavPageAdapter(@NonNull FragmentManager fm, int behavior,TextView nameSong,ImageView whiteBtn,ImageView redBtn) {
         super(fm, behavior);
         count = behavior;
         this.NameSong = nameSong;
+        this.whiteBtn = whiteBtn;
+        this.redBtn = redBtn;
     }
     @NonNull
     @Override
     public Fragment getItem(int position) {
-        if(position == 0) return new Fav_Music_fragment(NameSong);
+        if(position == 0) return new Fav_Music_fragment(NameSong,whiteBtn,redBtn);
         else if(position == 1) return new Fav_Image_fragment();
         return null;
     }

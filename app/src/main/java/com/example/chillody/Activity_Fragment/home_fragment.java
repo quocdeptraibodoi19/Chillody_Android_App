@@ -91,6 +91,7 @@ public class home_fragment extends Fragment {
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
         generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
+        titleTrackTextview = binding.styledPlayerControlView.findViewById(R.id.titletrackID);
 
         // !ishappen here is to restrict the condition such that the block code will be implemented only once at the intitial time
         // otherwise, when it move to another activity and backstack again, this callback (onviewcreated will be invoked again) ... thus
@@ -109,6 +110,8 @@ public class home_fragment extends Fragment {
                     listSongs = generalYoutubeViewModel.getGhibliSongs();
                     break;
             }
+            // when in the database, we do not have any data stored in that
+            // this observe method will not be invoked.
             listSongs.observe(getViewLifecycleOwner(), new Observer<List<YoutubeMusicElement>>() {
                 @Override
                 public void onChanged(List<YoutubeMusicElement> youtubeMusicElements) {
@@ -130,10 +133,14 @@ public class home_fragment extends Fragment {
                         singletonExoPlayer.getExoPlayer().seekTo(MediaItemPosition,0);
                         singletonExoPlayer.getExoPlayer().play();
                     }
+                    // this is when singleton sync with the youtubeMusicElement
+                    // this will be called in the case when you are listening to music and suddenly the oncreate will be called again.
+                    // this method is sure to happen when the data in the singleton syncs with those of database.
                     else if(singletonExoPlayer.getExoPlayer().getMediaItemCount() !=0)
                     {
-                        MediaItem  item = singletonExoPlayer.getExoPlayer().getMediaItemAt(singletonExoPlayer.getExoPlayer().getMediaItemCount()-1);
+                        MediaItem  item = singletonExoPlayer.getExoPlayer().getMediaItemAt(MediaItemPosition);
                         YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                        titleTrackTextview.setText(element.getTitle());
                         Log.d("PhuTest", "onChanged: The newly added song is: "+ element.getTitle());
                     }
                 }
@@ -151,7 +158,6 @@ public class home_fragment extends Fragment {
         categoryAdapter.setCategoryObjList(categoryObjList);
         binding.recyclerView.setAdapter(categoryAdapter);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
-        titleTrackTextview = binding.styledPlayerControlView.findViewById(R.id.titletrackID);
         RedHeartIcon = binding.styledPlayerControlView.findViewById(R.id.heartREDbtnID);
         WhiteHeartIcon = binding.styledPlayerControlView.findViewById(R.id.heartbtnID);
 
@@ -169,7 +175,7 @@ public class home_fragment extends Fragment {
                     // this is so magic.. I thought that it's just a hashed object.
                     element.setFavorite(true);
                     Log.d("QuocBug", "onClick: whiteheart click: "+element.getTitle());
-                    favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), singletonExoPlayer.getType()+"Love"));
+                    favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
                     generalYoutubeViewModel.updateLikeSong(element);
                 }
             }
@@ -186,7 +192,7 @@ public class home_fragment extends Fragment {
                 // due to the default layout.
                 YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                 element.setFavorite(false);
-                favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), singletonExoPlayer.getType()+"Love"));
+                favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
                 generalYoutubeViewModel.updateDislikeMusicElement(element);
             }
         });
@@ -203,28 +209,6 @@ public class home_fragment extends Fragment {
                     Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
                     new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
                 }
-//                generalYoutubeViewModel.deleteSongMusicType(singletonExoPlayer.getType());
-//                singletonExoPlayer.EndMusic();
-//                Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
-//                titleTrackTextview.setText(R.string.NoSong_Notification);
-//                RedHeartIcon.setVisibility(View.GONE);
-//                WhiteHeartIcon.setVisibility(View.VISIBLE);
-//                new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong();
-//                Throwable cause = error.getCause();
-//                if (cause instanceof HttpDataSource.HttpDataSourceException) {
-//                    HttpDataSource.HttpDataSourceException httpError = (HttpDataSource.HttpDataSourceException) cause;
-//                    if (httpError instanceof HttpDataSource.InvalidResponseCodeException) {
-//                        Toast.makeText(binding.getRoot().getContext(), "There's a error! Please wait a minute", Toast.LENGTH_SHORT).show();
-//                        Log.d("QuocBug", "onPlayerError: the link is error");
-//                        generalYoutubeViewModel.deleteSongMusicType(singletonExoPlayer.getType());
-//                        singletonExoPlayer.EndMusic();
-//                        Toast.makeText(binding.getRoot().getContext(), "Error occurs", Toast.LENGTH_SHORT).show();
-//                        titleTrackTextview.setText(R.string.NoSong_Notification);
-//                        RedHeartIcon.setVisibility(View.GONE);
-//                        WhiteHeartIcon.setVisibility(View.VISIBLE);
-//
-//                    }
-//                }
             }
             @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {

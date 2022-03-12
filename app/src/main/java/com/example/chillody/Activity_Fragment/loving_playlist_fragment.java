@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.example.chillody.Adapter.FavPageAdapter;
 import com.example.chillody.Model.FavoriteYoutubeElement;
+import com.example.chillody.Model.FavoriteYoutubeViewModel;
 import com.example.chillody.Model.GeneralYoutubeViewModel;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
@@ -50,6 +51,7 @@ public class loving_playlist_fragment extends Fragment {
     private SingletonExoPlayer singletonExoPlayer;
     private ImageView WhiteLoveBtn, RedLoveBtn;
     private GeneralYoutubeViewModel generalYoutubeViewModel;
+    private FavoriteYoutubeViewModel favoriteYoutubeViewModel;
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -80,10 +82,11 @@ public class loving_playlist_fragment extends Fragment {
         WhiteLoveBtn = binding.lovingplayliststyledPlayerControlView.findViewById(R.id.heartbtnID);
         RedLoveBtn = binding.lovingplayliststyledPlayerControlView.findViewById(R.id.heartREDbtnID);
         generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
+        favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
         // Processing the TabLayout
         binding.tablayoutID.addTab(binding.tablayoutID.newTab().setText("Favorite Songs"));
         binding.tablayoutID.addTab(binding.tablayoutID.newTab().setText("Favorite Images"));
-        FavPageAdapter favPageAdapter = new FavPageAdapter(Objects.requireNonNull(getActivity()).getSupportFragmentManager(),binding.tablayoutID.getTabCount(),titleTrackTextview);
+        FavPageAdapter favPageAdapter = new FavPageAdapter(Objects.requireNonNull(getActivity()).getSupportFragmentManager(),binding.tablayoutID.getTabCount(),titleTrackTextview,WhiteLoveBtn,RedLoveBtn);
         binding.viewpagerID.setAdapter(favPageAdapter);
         // There are 2 listeners for the Tab and its corresponding content layout
         binding.viewpagerID.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tablayoutID));
@@ -106,14 +109,16 @@ public class loving_playlist_fragment extends Fragment {
             @Override
             public void onClick(View v) {
                 MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+                Log.d("Luc", "onClick: in the outer white");
                 if(item != null && item.localConfiguration != null){
+                    Log.d("Luc", "onClick: in the inner white");
                     YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                     WhiteLoveBtn.setVisibility(View.GONE);
                     RedLoveBtn.setVisibility(View.VISIBLE);
                     // I don't know why the YoutubeMusicElement in the tag is really the real instance ...
                     // this is so magic.. I imagine that it's just a hashed object.
                     element.setFavorite(true);
-                    home_fragment.favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), singletonExoPlayer.getType()+"Love"));
+                    favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
                     generalYoutubeViewModel.updateLikeSong(element);
                 }
             }
@@ -121,12 +126,14 @@ public class loving_playlist_fragment extends Fragment {
         RedLoveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("Luc", "onClick: In the love ");
                 MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
                 WhiteLoveBtn.setVisibility(View.VISIBLE);
                 RedLoveBtn.setVisibility(View.GONE);
                 YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                 element.setFavorite(false);
-                home_fragment.favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), singletonExoPlayer.getType()+"Love"));
+
+                favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
                 generalYoutubeViewModel.updateDislikeMusicElement(element);
             }
         });
@@ -241,13 +248,16 @@ public class loving_playlist_fragment extends Fragment {
         }
         isHappenBefore = true;
     }
-
+    //ToDo: There is a very strange bug in the favorite song fragment... when you click the play on the favorite items and then you click the trash and back or go out the program
+    // as fast as possible ... then it will have a bug.
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.d("QuocLovingPlaylist", "onDestroy: Destroy");
         if(singletonExoPlayer.getExoPlayer() != null)
         singletonExoPlayer.getExoPlayer().removeListener(listener);
+        else{
+        }
 
     }
 }

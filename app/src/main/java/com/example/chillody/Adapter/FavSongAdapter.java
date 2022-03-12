@@ -36,13 +36,16 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
     private final FavoriteYoutubeViewModel favoriteYoutubeViewModel;
     private final GeneralYoutubeViewModel generalYoutubeViewModel;
     private final TextView TitleTrack;
-    public FavSongAdapter(Context context, Application application, FavoriteYoutubeViewModel model, GeneralYoutubeViewModel generalYoutubeViewModel,TextView NameSong){
+    private final ImageView whiteBtn, redBtn;
+    public FavSongAdapter(Context context, Application application, FavoriteYoutubeViewModel model, GeneralYoutubeViewModel generalYoutubeViewModel,TextView NameSong,ImageView whiteBtn, ImageView redBtn){
         layoutInflater = LayoutInflater.from(context);
         favoriteYoutubeElements = null;
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
         favoriteYoutubeViewModel = model;
         this.generalYoutubeViewModel = generalYoutubeViewModel;
         this.TitleTrack = NameSong;
+        this.whiteBtn = whiteBtn;
+        this.redBtn = redBtn;
     }
     @NonNull
     @Override
@@ -95,8 +98,8 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                     }
                     // this is when the list in the singleton is matching with the real list in the loving fragment
                     else{
-                        Log.d("MusicElement", "onClick: if 3");
-                        singletonExoPlayer.getExoPlayer().seekTo(getLayoutPosition());
+                        Log.d("MusicElement", "onClick: if "+ String.valueOf(getLayoutPosition()));
+                        singletonExoPlayer.getExoPlayer().seekTo(getLayoutPosition(),0);
                         singletonExoPlayer.getExoPlayer().prepare();
                         singletonExoPlayer.getExoPlayer().play();
                     }
@@ -131,7 +134,21 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                                                 // because owing to some magical logics, element bellow still reference to the object
                                                 // store in the localConfiguration.tag.
                                                 element.setFavorite(false);
-                                                singletonExoPlayer.getExoPlayer().removeMediaItem(i);
+                                                if(element.getMusicType().contains("Love"))
+                                                {
+                                                    singletonExoPlayer.getExoPlayer().removeMediaItem(i);
+                                                    if(favoriteYoutubeElements.size() == 1) {
+                                                        TitleTrack.setText(R.string.NoSong_Notification);
+                                                        whiteBtn.setVisibility(View.VISIBLE);
+                                                        redBtn.setVisibility(View.GONE);
+                                                    }
+                                                }
+                                                // this is not in the scope of loving music... thus, when clicking the trash, the song in the exoplayer is not cleared...
+                                                // therefore, we need to update the UI...
+                                                else{
+                                                    whiteBtn.setVisibility(View.VISIBLE);
+                                                    redBtn.setVisibility(View.GONE);
+                                                }
                                                 break;
                                             }
                                         }
