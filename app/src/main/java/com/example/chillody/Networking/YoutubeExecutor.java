@@ -266,6 +266,7 @@ public class YoutubeExecutor  {
                         Log.d("Trong", "handleMessage: the size of exoplayer: "+ String.valueOf(player.getMediaItemCount()));
                         Log.d("Trong", "handleMessage: the link of current element: "+ element.getDownloadedMusicUrl());
                        // This is for the favorite loving music is stored in another table... therefore, we have to check for the suitable database.
+                        singletonExoPlayer.setErrorProcessedFlag(true);
                         if(!element.getMusicType().contains("Love"))
                             repository.insertNewSong(element);
                        else

@@ -12,6 +12,7 @@ public class SingletonExoPlayer {
     private final ExoPlayer exoPlayer;
     private static SingletonExoPlayer singletonExoPlayer = null;
     private boolean isThreadProcessing = false;
+    private boolean isErrorProcessed = false;
     private int UpdatingUIFlag = -1;
     private SingletonExoPlayer(Application application){
         exoPlayer = new ExoPlayer.Builder(application).build();
@@ -46,5 +47,11 @@ public class SingletonExoPlayer {
     }
     public int getUIUpdatingFlag(){
         return this.UpdatingUIFlag;
+    }
+    public boolean IsErrorProcessed(){
+        return this.isErrorProcessed;
+    }
+    public void setErrorProcessedFlag(boolean isErrorProcessed){
+        this.isErrorProcessed = isErrorProcessed;
     }
 }
