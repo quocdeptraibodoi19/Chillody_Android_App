@@ -194,6 +194,7 @@ public class music_fragment extends Fragment {
                 Log.d("QuocBug", "onPlayerError: PLAYERERROR IN MUSIC_FRAGMENT");
                 Log.d("QuocBug", "onPlayerError: error name"+ error.getErrorCodeName());
                 MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+                CurrentSongNameTextView.setText("Loading...");
                 if(item != null && item.localConfiguration != null){
                     YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                     Throwable cause = error.getCause();

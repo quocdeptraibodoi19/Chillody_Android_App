@@ -1,6 +1,7 @@
 package com.example.chillody.Networking;
 
 import android.app.Application;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,6 +19,7 @@ import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.source.MediaSource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -110,7 +112,6 @@ public class YoutubeExecutor  {
 
                 try {
                     Response response = client.newCall(request).execute();
-
                     // Processing the Json from the response body above
                     JSONArray searchedSongsArray = new JSONObject(Objects.requireNonNull(response.body()).string()).getJSONArray("results");
                     String title;
@@ -233,7 +234,9 @@ public class YoutubeExecutor  {
 
     // if failure happens, this will ignite in order to reload the url.
     public void failHandlingSong(String ID, int position){
-
+        Log.d("Trong", "failHandlingSong: in the process of correcting the link");
+        if(singletonExoPlayer.isThreadProcessing() || isExecuting()) return;
+        singletonExoPlayer.setThreadProcessing(true);
         ExoPlayer player = singletonExoPlayer.getExoPlayer();
         ExecutorService service = Executors.newFixedThreadPool(1);
         Handler handler = new Handler(Looper.getMainLooper()){
@@ -241,16 +244,35 @@ public class YoutubeExecutor  {
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if(msg.what == EXE_FAILURE_SONG_MESSAGE){
-                    player.getMediaItemAt(position);
+                    // because you can't change the path of the uri that is available in the list
+                    // the only way you can change the path of the uri is to delete it and create a new one
                     if(player.getMediaItemAt(position).localConfiguration != null){
                        YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(player.getMediaItemAt(position).localConfiguration).tag;
+                       // even though you change the DownLoadedMusicUrl, it just change the tag in the localConfiguration.
+                        // the key element that helps you to listen the music is the Uri in the localConfiguration.
+                        // But as mentioned above, the Uri cannot be changed because it does not have any set methods ( so stupid :) )
+                        // therefore, the only way you can do is to remove the current one and substitute it with the new instance of that object.
                        element.setDownloadedMusicUrl((String) msg.obj);
+                        YoutubeMusicElement element1 = (YoutubeMusicElement) player.getMediaItemAt(position+1).localConfiguration.tag;
+                        Log.d("Trong", "handleMessage: the size of exoplayer: "+ String.valueOf(player.getMediaItemCount()));
+                        Log.d("Trong", "handleMessage: the name of the song: "+ element1.getTitle());
+                        // why you have to add it at position +1 because this function will add the new object at that index +1 ( it means that the new added item' position will lie in that position +1 )
+                       player.addMediaItem(position+1,new MediaItem.Builder().setUri(element.getDownloadedMusicUrl()).setTag(element).build());
+                       // you remove the current old one :) .... so stupid. I don't understand why they do not provide the set method for the Uri object :).
+                        element1 = (YoutubeMusicElement) player.getMediaItemAt(position+1).localConfiguration.tag;
+                        Log.d("Trong", "handleMessage: the name of the next song: "+ element1.getTitle());
+                        Log.d("Trong", "handleMessage: the size of exoplayer: "+ String.valueOf(player.getMediaItemCount()));
+                        player.removeMediaItem(position);
+                        Log.d("Trong", "handleMessage: the size of exoplayer: "+ String.valueOf(player.getMediaItemCount()));
+                        Log.d("Trong", "handleMessage: the link of current element: "+ element.getDownloadedMusicUrl());
                        // This is for the favorite loving music is stored in another table... therefore, we have to check for the suitable database.
-                       if(!element.getMusicType().contains("Love"))
+                        if(!element.getMusicType().contains("Love"))
                             repository.insertNewSong(element);
                        else
                            favSongRepository.InsertSongElement(new FavoriteYoutubeElement(element.getMusicID(),(String) msg.obj,element.getTitle(), element.getMusicType()));
                        player.prepare();
+                       // because there is just one instance of message.Therefore, we can mark the finish flag here.
+                        singletonExoPlayer.setThreadProcessing(false);
                     }
                 }
             }
@@ -259,6 +281,7 @@ public class YoutubeExecutor  {
             @Override
             public void run() {
                 // get mp3 from ID
+                singletonExoPlayer.setThreadProcessing(true);
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
                         .url("https://youtube-mp36.p.rapidapi.com/dl?id="+ID)
@@ -270,10 +293,13 @@ public class YoutubeExecutor  {
                 try {
                     // this is done synchronously ( note that synchronous process must be done in the worker thread).
                     Response response = client.newCall(request).execute();
-                    String songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
+                    String body = response.body().string();
+                    Log.d("Trong", "failHandlingSong: the content of json: "+ body);
+                    String songUrl = new JSONObject(body).getString("link");
                     Message message = new Message();
                     message.what = EXE_FAILURE_SONG_MESSAGE;
                     message.obj = songUrl;
+                    handler.sendMessage(message);
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }

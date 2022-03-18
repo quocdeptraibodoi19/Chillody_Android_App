@@ -136,13 +136,28 @@ public class home_fragment extends Fragment {
                     // this is when singleton sync with the youtubeMusicElement
                     // this will be called in the case when you are listening to music and suddenly the oncreate will be called again.
                     // this method is sure to happen when the data in the singleton syncs with those of database.
-                    else if(singletonExoPlayer.getExoPlayer().getMediaItemCount() !=0)
-                    {
-                        MediaItem  item = singletonExoPlayer.getExoPlayer().getMediaItemAt(MediaItemPosition);
-                        YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
-                        titleTrackTextview.setText(element.getTitle());
-                        Log.d("PhuTest", "onChanged: The newly added song is: "+ element.getTitle());
-                    }
+                    // but it will conflict with the feature which re-set the the error song in the current list.
+                    // just in this fragment.... we process thing this way... because other fragments navigates to this fragment... in other words, this fragment plays a role as an intersection
+                    // everytime, this fragment move to another fragment the
+//                    else if(singletonExoPlayer.getExoPlayer().getMediaItemCount() !=0)
+//                    {
+//                        Log.d("Luc", "onChanged: in the observer else if--- So strange");
+//                        if(!singletonExoPlayer.IsErrorProcessed())
+//                        {
+////                            MediaItem  item = singletonExoPlayer.getExoPlayer().getMediaItemAt(MediaItemPosition);
+////                            YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+////                            titleTrackTextview.setText(element.getTitle());
+////                            Log.d("PhuTest", "onChanged: The newly added song is: "+ element.getTitle());
+//                        }
+//                        else singletonExoPlayer.setErrorProcessedFlag(false);
+//                    }
+                    // The reason why I think we should delete the above code is that even when we go to the next fragment ....
+                    // the home fragment will still remain the same... ( I mean it's life will be preserved in the system)
+                    // I guess the ViewModel will not be deleted ... I mean even though we init it with the new ViewModel object with ViewModel.of...
+                    // it will be the old instance ... Therefore, we don't need to do the above block... ( I guess in the past... you though that the generalYoutubeViewModel
+                    // will be reset every navigation ( because when navigating to another fragment and back, the onViewCreated and onCreateView will be re-invoked
+                    // therefore, the generalYoutubeViewModel will be reset, thus it will re-observe ... but at that time , the current data in the database has the same size with which in the singletonExoplayer)
+
                 }
             });
         }
@@ -207,6 +222,7 @@ public class home_fragment extends Fragment {
                 if(item!= null && item.localConfiguration != null){
                     YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                     Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
+                    titleTrackTextview.setText("Loading...");
                     new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
                 }
             }

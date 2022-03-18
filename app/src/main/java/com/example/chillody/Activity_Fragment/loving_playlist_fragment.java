@@ -169,6 +169,7 @@ public class loving_playlist_fragment extends Fragment {
                 if(item!= null && item.localConfiguration != null){
                     YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                     Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
+                    titleTrackTextview.setText("Loading...");
                     new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
                 }
             }
