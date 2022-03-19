@@ -19,6 +19,9 @@ public interface FavoriteYoutubeDao {
     @Delete
     void deleteMusicDao(FavoriteYoutubeElement element);
 
+    @Query("UPDATE FAVORITE_MUSIC_TABLE SET MusicUrl = :Url WHERE MusicID = :songID")
+    void updateDownloadUrl(String songID, String Url);
+
     @Query("SELECT * FROM Favorite_Music_Table WHERE MusicType = :Type ")
     LiveData<List<FavoriteYoutubeElement>> getFAVElementsInType(String Type);
 

@@ -41,8 +41,4 @@ public class GeneralYoutubeViewModel extends AndroidViewModel {
     public void updateDislikeMusicElement(String songID){
         repository.updateDislikeMusicElement(songID);
     }
-    public void updateDownloadUrl(String songID,String DownloadUrl){
-        repository.updateDownLoadUrl(songID,DownloadUrl);
-    }
-
 }

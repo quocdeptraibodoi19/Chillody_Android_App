@@ -72,5 +72,14 @@ public class FavSongRepository {
         });
         executorService.shutdown();
     }
-
+    public void updateSongUrl(String songId, String songUrl){
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        service.execute(new Runnable() {
+            @Override
+            public void run() {
+                favoriteYoutubeDao.updateDownloadUrl(songId,songUrl);
+            }
+        });
+        service.shutdown();
+    }
 }

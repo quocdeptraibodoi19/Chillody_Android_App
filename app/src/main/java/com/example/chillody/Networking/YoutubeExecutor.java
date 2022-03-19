@@ -263,8 +263,9 @@ public class YoutubeExecutor  {
                         // I mean in the past you used to use the function: repository.insertNewSong(element)
                         if(!element.getMusicType().contains("Love"))
                             repository.updateDownLoadUrl(element.getMusicID(),element.getDownloadedMusicUrl());
-                       else
-                           favSongRepository.InsertSongElement(new FavoriteYoutubeElement(element.getMusicID(),(String) msg.obj,element.getTitle(), element.getMusicType()));
+                       // The same as above case... if you simply use  favSongRepository.InsertSongElement(), the order of the songs will no remain the same.
+                        else
+                           favSongRepository.updateSongUrl(element.getMusicID(), element.getDownloadedMusicUrl());
                        player.prepare();
                        // because there is just one instance of message.Therefore, we can mark the finish flag here.
                         singletonExoPlayer.setThreadProcessing(false);
