@@ -145,7 +145,7 @@ public class loving_playlist_fragment extends Fragment {
                 WhiteLoveBtn.setVisibility(View.GONE );
                 RedLoveBtn.setVisibility(View.VISIBLE);
             }
-            // need to check else here because despite the default white button, it just in the initial state... if the current song is loved ... (i.e the red button is visible)... then you navigate to the previous one
+            // need to check else here because despite the default white LovingButton, it just in the initial state... if the current song is loved ... (i.e the red LovingButton is visible)... then you navigate to the previous one
             // which is not liked... it can't turn white unless you define the else condition here.
             else{
                 WhiteLoveBtn.setVisibility(View.VISIBLE );

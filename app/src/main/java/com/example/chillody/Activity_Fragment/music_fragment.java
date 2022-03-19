@@ -176,9 +176,15 @@ public class music_fragment extends Fragment {
             YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(Objects.requireNonNull(exoPlayer.getCurrentMediaItem()).localConfiguration).tag;
             CurrentSongNameTextView.setText(element.getTitle());
             if(element.isFavorite())
-                binding.button.setVisibility(View.GONE);
+            {
+                binding.LovingButton.setVisibility(View.GONE);
+                binding.UnLovingButton.setVisibility(View.VISIBLE);
+            }
             else
-                binding.button.setVisibility(View.VISIBLE);
+            {
+                binding.LovingButton.setVisibility(View.VISIBLE);
+                binding.UnLovingButton.setVisibility(View.GONE);
+            }
             if(exoPlayer.getCurrentMediaItemIndex() + 1 < exoPlayer.getMediaItemCount()){
                 element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(exoPlayer.getCurrentMediaItemIndex() + 1).localConfiguration).tag;
                 NextSongNameTextView.setText(element.getTitle());
@@ -238,9 +244,15 @@ public class music_fragment extends Fragment {
                     YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
                     CurrentSongNameTextView.setText(element.getTitle());
                     if(element.isFavorite())
-                        binding.button.setVisibility(View.GONE);
+                    {
+                        binding.LovingButton.setVisibility(View.GONE);
+                        binding.UnLovingButton.setVisibility(View.VISIBLE);
+                    }
                     else
-                        binding.button.setVisibility(View.VISIBLE);
+                    {
+                        binding.LovingButton.setVisibility(View.VISIBLE);
+                        binding.UnLovingButton.setVisibility(View.GONE);
+                    }
                     Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
                     if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() < singletonExoPlayer.getExoPlayer().getMediaItemCount() -1){
                         // this is NOT the last song in the list scope
@@ -270,13 +282,17 @@ public class music_fragment extends Fragment {
         // This is invoked when the exoplayer begin a new mediaitem.
 
         // process of adding song into the favorite list:
-        binding.button.setOnClickListener(new View.OnClickListener() {
+        binding.LovingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
-                binding.button.setVisibility(View.GONE);
+                // we need a condition here because, without the condition in case that when you are a new user clicking the category,
+                //  it takes time to load more song into the list right... during that short time, if you click the button it will cause the bug
+               // therefore, it need a condition here to prevent user to do that edge case.
                 if(item != null && item.localConfiguration != null)
                 {
+                    binding.LovingButton.setVisibility(View.GONE);
+                    binding.UnLovingButton.setVisibility(View.VISIBLE);
                     YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                     element.setFavorite(true);
                     favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
@@ -284,7 +300,20 @@ public class music_fragment extends Fragment {
                 }
             }
         });
-
+        binding.UnLovingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+                // Contrary to the white button, in this case, the song is already loaded into the list (because the UnlovingButton is visible when the system detect the song is favorite :3 )
+                // therefore, we do not need an if condition here ( because it is sure that the item is available and item.localconfiguration is not null :3 )
+                YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                binding.UnLovingButton.setVisibility(View.GONE);
+                binding.LovingButton.setVisibility(View.VISIBLE);
+                element.setFavorite(false);
+                favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
+                generalYoutubeViewModel.updateDislikeMusicElement(element);
+            }
+        });
         // process the image:
         //Todo: Do optimization and cache the url of image in here to avoid the waste in API calls
         // We can use SQlite or SharedReference to locally cache the Urls (cache the UnsplashModel)
@@ -359,9 +388,15 @@ public class music_fragment extends Fragment {
                 YoutubeMusicElement currentElement = (YoutubeMusicElement) item.localConfiguration.tag;
                 CurrentSongNameTextView.setText(currentElement.getTitle());
                 if(currentElement.isFavorite())
-                    binding.button.setVisibility(View.GONE);
+                {
+                    binding.LovingButton.setVisibility(View.GONE);
+                    binding.UnLovingButton.setVisibility(View.VISIBLE);
+                }
                 else
-                    binding.button.setVisibility(View.VISIBLE);
+                {
+                    binding.LovingButton.setVisibility(View.VISIBLE);
+                    binding.UnLovingButton.setVisibility(View.GONE);
+                }
             }
             binding.PlayerControlViewID.setPlayer(singletonExoPlayer.getExoPlayer());
             singletonExoPlayer.getExoPlayer().addListener(listener);

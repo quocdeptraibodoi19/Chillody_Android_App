@@ -183,6 +183,8 @@ public class home_fragment extends Fragment {
             @Override
             public void onClick(View v) {
                 MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+                // we wrap the logic part in the if condition because we are setting the feature in which when there is no song in the current list
+                // no matter how much we click the white button, it can't not turn into red.
                 if(item != null && item.localConfiguration != null){
                     YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                     RedHeartIcon.setVisibility(View.VISIBLE);
