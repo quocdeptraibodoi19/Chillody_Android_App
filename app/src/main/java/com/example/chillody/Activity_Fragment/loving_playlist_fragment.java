@@ -116,7 +116,7 @@ public class loving_playlist_fragment extends Fragment {
                     WhiteLoveBtn.setVisibility(View.GONE);
                     RedLoveBtn.setVisibility(View.VISIBLE);
                     // I don't know why the YoutubeMusicElement in the tag is really the real instance ...
-                    // this is so magic.. I imagine that it's just a hashed object.
+                    // this is so magic.. I though that it's just a hashed object.
                     element.setFavorite(true);
                     favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
                     generalYoutubeViewModel.updateLikeSong(element);
@@ -132,7 +132,6 @@ public class loving_playlist_fragment extends Fragment {
                 RedLoveBtn.setVisibility(View.GONE);
                 YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                 element.setFavorite(false);
-
                 favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
                 generalYoutubeViewModel.updateDislikeMusicElement(element);
             }
@@ -146,7 +145,12 @@ public class loving_playlist_fragment extends Fragment {
                 WhiteLoveBtn.setVisibility(View.GONE );
                 RedLoveBtn.setVisibility(View.VISIBLE);
             }
-            // Not checking else condition here because by default, the RedHeardIcon is set to Gone.
+            // need to check else here because despite the default white button, it just in the initial state... if the current song is loved ... (i.e the red button is visible)... then you navigate to the previous one
+            // which is not liked... it can't turn white unless you define the else condition here.
+            else{
+                WhiteLoveBtn.setVisibility(View.VISIBLE );
+                RedLoveBtn.setVisibility(View.GONE);
+            }
         }
         // to load more song if the current song is gonna turn to the last song in the list
         // !singletonExoPlayer.isThreadProcessing() is to prevent the case in which
@@ -181,6 +185,10 @@ public class loving_playlist_fragment extends Fragment {
                     if(!element.isFavorite()){
                         RedLoveBtn.setVisibility(View.GONE);
                         WhiteLoveBtn.setVisibility(View.VISIBLE);
+                    }
+                    else{
+                        RedLoveBtn.setVisibility(View.VISIBLE);
+                        WhiteLoveBtn.setVisibility(View.GONE);
                     }
                 }
                 if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1){
@@ -238,6 +246,10 @@ public class loving_playlist_fragment extends Fragment {
                     RedLoveBtn.setVisibility(View.GONE);
                     WhiteLoveBtn.setVisibility(View.VISIBLE);
                 }
+                else{
+                    RedLoveBtn.setVisibility(View.VISIBLE);
+                    WhiteLoveBtn.setVisibility(View.GONE);
+                }
             }
             if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() == singletonExoPlayer.getExoPlayer().getMediaItemCount()-1 && !singletonExoPlayer.isThreadProcessing()){
                 if(singletonExoPlayer.getType().contains("Love")) return;
@@ -257,8 +269,5 @@ public class loving_playlist_fragment extends Fragment {
         Log.d("QuocLovingPlaylist", "onDestroy: Destroy");
         if(singletonExoPlayer.getExoPlayer() != null)
         singletonExoPlayer.getExoPlayer().removeListener(listener);
-        else{
-        }
-
     }
 }

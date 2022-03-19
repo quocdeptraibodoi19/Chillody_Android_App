@@ -24,6 +24,10 @@ public interface YoutubeMusicDao {
 
     @Query("UPDATE General_Song_Table SET IsFavorite = 1 WHERE MusicID = :songID ")
     void UpdateLikeMusicElement(String songID);
+
+    @Query("UPDATE General_Song_Table SET DownloadUrl = :Url WHERE MusicID = :songID")
+    void UpdateDownloadUrlMusicElement(String songID,String Url);
+
     @Query("UPDATE General_Song_Table SET IsFavorite = 0 WHERE MusicID = :songID")
     void UpdateDisLikeMusicElement(String songID);
     @Delete

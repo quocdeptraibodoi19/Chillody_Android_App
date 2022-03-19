@@ -253,22 +253,16 @@ public class YoutubeExecutor  {
                         // But as mentioned above, the Uri cannot be changed because it does not have any set methods ( so stupid :) )
                         // therefore, the only way you can do is to remove the current one and substitute it with the new instance of that object.
                        element.setDownloadedMusicUrl((String) msg.obj);
-                        YoutubeMusicElement element1 = (YoutubeMusicElement) player.getMediaItemAt(position+1).localConfiguration.tag;
-                        Log.d("Trong", "handleMessage: the size of exoplayer: "+ String.valueOf(player.getMediaItemCount()));
-                        Log.d("Trong", "handleMessage: the name of the song: "+ element1.getTitle());
                         // why you have to add it at position +1 because this function will add the new object at that index +1 ( it means that the new added item' position will lie in that position +1 )
                        player.addMediaItem(position+1,new MediaItem.Builder().setUri(element.getDownloadedMusicUrl()).setTag(element).build());
                        // you remove the current old one :) .... so stupid. I don't understand why they do not provide the set method for the Uri object :).
-                        element1 = (YoutubeMusicElement) player.getMediaItemAt(position+1).localConfiguration.tag;
-                        Log.d("Trong", "handleMessage: the name of the next song: "+ element1.getTitle());
-                        Log.d("Trong", "handleMessage: the size of exoplayer: "+ String.valueOf(player.getMediaItemCount()));
                         player.removeMediaItem(position);
-                        Log.d("Trong", "handleMessage: the size of exoplayer: "+ String.valueOf(player.getMediaItemCount()));
-                        Log.d("Trong", "handleMessage: the link of current element: "+ element.getDownloadedMusicUrl());
                        // This is for the favorite loving music is stored in another table... therefore, we have to check for the suitable database.
                         singletonExoPlayer.setErrorProcessedFlag(true);
+                        // if you simply insert song into repository like this ... the order may not remain the same ( the new song even though it replaces the old one because of your defined way to resolve the conflict.... but the order may not remain the same... the new one will be added into the rear of the list)
+                        // I mean in the past you used to use the function: repository.insertNewSong(element)
                         if(!element.getMusicType().contains("Love"))
-                            repository.insertNewSong(element);
+                            repository.updateDownLoadUrl(element.getMusicID(),element.getDownloadedMusicUrl());
                        else
                            favSongRepository.InsertSongElement(new FavoriteYoutubeElement(element.getMusicID(),(String) msg.obj,element.getTitle(), element.getMusicType()));
                        player.prepare();

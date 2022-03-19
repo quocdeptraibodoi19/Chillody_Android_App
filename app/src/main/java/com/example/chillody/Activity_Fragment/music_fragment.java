@@ -22,6 +22,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chillody.Adapter.UnsplashImgAdapter;
+import com.example.chillody.Model.FavoriteYoutubeElement;
+import com.example.chillody.Model.FavoriteYoutubeViewModel;
 import com.example.chillody.Model.GeneralYoutubeViewModel;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
@@ -37,6 +39,7 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.google.android.material.button.MaterialButton;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -48,6 +51,7 @@ public class music_fragment extends Fragment {
     private UnsplashImgModel unsplashImgModel;
     private YoutubeMusicModel youtubeMusicModel;
     private YoutubeExecutor youtubeExecutor;
+    private FavoriteYoutubeViewModel favoriteYoutubeViewModel;
     private String page;
     private String ImgQuery;
     private String MusicQuery;
@@ -102,7 +106,7 @@ public class music_fragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
         unsplashImgModel = ViewModelProviders.of(this).get(UnsplashImgModel.class);
         GeneralYoutubeViewModel generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
@@ -171,6 +175,10 @@ public class music_fragment extends Fragment {
             ExoPlayer exoPlayer = singletonExoPlayer.getExoPlayer();
             YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(Objects.requireNonNull(exoPlayer.getCurrentMediaItem()).localConfiguration).tag;
             CurrentSongNameTextView.setText(element.getTitle());
+            if(element.isFavorite())
+                binding.button.setVisibility(View.GONE);
+            else
+                binding.button.setVisibility(View.VISIBLE);
             if(exoPlayer.getCurrentMediaItemIndex() + 1 < exoPlayer.getMediaItemCount()){
                 element = (YoutubeMusicElement) Objects.requireNonNull(exoPlayer.getMediaItemAt(exoPlayer.getCurrentMediaItemIndex() + 1).localConfiguration).tag;
                 NextSongNameTextView.setText(element.getTitle());
@@ -229,6 +237,10 @@ public class music_fragment extends Fragment {
                     int curIndex = singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex();
                     YoutubeMusicElement element = (YoutubeMusicElement) mediaItem.localConfiguration.tag;
                     CurrentSongNameTextView.setText(element.getTitle());
+                    if(element.isFavorite())
+                        binding.button.setVisibility(View.GONE);
+                    else
+                        binding.button.setVisibility(View.VISIBLE);
                     Log.d("QuocBug", "onMediaItemTransition: title: "+ element.getTitle());
                     if(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex() < singletonExoPlayer.getExoPlayer().getMediaItemCount() -1){
                         // this is NOT the last song in the list scope
@@ -256,6 +268,23 @@ public class music_fragment extends Fragment {
         };
         singletonExoPlayer.getExoPlayer().addListener(listener);
         // This is invoked when the exoplayer begin a new mediaitem.
+
+        // process of adding song into the favorite list:
+        binding.button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+                binding.button.setVisibility(View.GONE);
+                if(item != null && item.localConfiguration != null)
+                {
+                    YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                    element.setFavorite(true);
+                    favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
+                    generalYoutubeViewModel.updateLikeSong(element);
+                }
+            }
+        });
+
         // process the image:
         //Todo: Do optimization and cache the url of image in here to avoid the waste in API calls
         // We can use SQlite or SharedReference to locally cache the Urls (cache the UnsplashModel)
@@ -329,6 +358,10 @@ public class music_fragment extends Fragment {
             {
                 YoutubeMusicElement currentElement = (YoutubeMusicElement) item.localConfiguration.tag;
                 CurrentSongNameTextView.setText(currentElement.getTitle());
+                if(currentElement.isFavorite())
+                    binding.button.setVisibility(View.GONE);
+                else
+                    binding.button.setVisibility(View.VISIBLE);
             }
             binding.PlayerControlViewID.setPlayer(singletonExoPlayer.getExoPlayer());
             singletonExoPlayer.getExoPlayer().addListener(listener);

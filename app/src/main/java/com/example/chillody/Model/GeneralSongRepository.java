@@ -87,4 +87,14 @@ public class GeneralSongRepository {
         });
         service.shutdown();
     }
+    public void updateDownLoadUrl(String songID, String DownloadUrl){
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        service.execute(new Runnable() {
+            @Override
+            public void run() {
+                youtubeMusicDao.UpdateDownloadUrlMusicElement(songID,DownloadUrl);
+            }
+        });
+        service.shutdown();
+    }
 }

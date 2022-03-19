@@ -62,7 +62,7 @@ public class home_fragment extends Fragment {
     private boolean isHappenBefore = false;
     private ImageView RedHeartIcon,WhiteHeartIcon;
     private LiveData<List<YoutubeMusicElement>> listSongs;
-    public static FavoriteYoutubeViewModel favoriteYoutubeViewModel;
+    public FavoriteYoutubeViewModel favoriteYoutubeViewModel;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
