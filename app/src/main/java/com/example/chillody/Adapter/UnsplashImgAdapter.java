@@ -1,7 +1,9 @@
 package com.example.chillody.Adapter;
 
 import android.content.Context;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +19,10 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.example.chillody.Model.DoubleClickListener;
+import com.example.chillody.Model.FavoriteUnsplashImgViewModel;
 import com.example.chillody.Model.UnsplashImgElement;
 import com.example.chillody.R;
-import com.github.ybq.android.spinkit.style.FoldingCube;
 
 import java.lang.ref.WeakReference;
 
@@ -28,10 +31,12 @@ public class UnsplashImgAdapter extends RecyclerView.Adapter<UnsplashImgAdapter.
     private UnsplashImgElement element;
     private LayoutInflater inflater;
     private Context context;
-    public UnsplashImgAdapter(Context context,ProgressBar progressBar){
+    private FavoriteUnsplashImgViewModel favoriteUnsplashImgViewModel;
+    public UnsplashImgAdapter(Context context,ProgressBar progressBar,FavoriteUnsplashImgViewModel favoriteUnsplashImgViewModel){
         inflater = LayoutInflater.from(context);
         this.context = context;
         progressBarWeakReference = new WeakReference<>(progressBar);
+        this.favoriteUnsplashImgViewModel = favoriteUnsplashImgViewModel;
     }
     @NonNull
     @Override
@@ -57,7 +62,57 @@ public class UnsplashImgAdapter extends RecyclerView.Adapter<UnsplashImgAdapter.
                         @Override
                         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                             progressBarWeakReference.get().setVisibility(View.INVISIBLE);
-                            holder.WhiteHeartIcon.setVisibility(View.VISIBLE);
+                            if(element.getIsFavorite() == 1){
+                                holder.WhiteHeartIcon.setVisibility(View.GONE);
+                                holder.RedHeartIcon.setVisibility(View.VISIBLE);
+                            }
+                            else{
+                                holder.WhiteHeartIcon.setVisibility(View.VISIBLE);
+                                holder.RedHeartIcon.setVisibility(View.GONE);
+
+                            }
+                            holder.UnsplashImage.setOnClickListener(new DoubleClickListener() {
+                                @Override
+                                public void onDoubleClick(View v) {
+                                    Log.d("Ah", "onDoubleClick: Double animation");
+                                    holder.InsHeartIcon.setVisibility(View.VISIBLE);
+                                    holder.InsHeartIcon.setAlpha(0.75f);
+                                    if(holder.BiggestLovingdrawable instanceof AnimatedVectorDrawable){
+                                        Log.d("Ah", "onDoubleClick: ani");
+                                        holder.BiggestLovingImageAnimatedDrawable = (AnimatedVectorDrawable) holder.BiggestLovingdrawable;
+                                        holder.BiggestLovingImageAnimatedDrawable.start();
+                                        holder.WhiteHeartIcon.setVisibility(View.GONE);
+                                        holder.RedHeartIcon.setVisibility(View.VISIBLE);
+                                        holder.SmallLovingImageAnimatedDrawable = (AnimatedVectorDrawable) holder.RegularLovingdrawable;
+                                        holder.SmallLovingImageAnimatedDrawable.start();
+                                        if(element.getIsFavorite() == 0){
+                                            element.setIsFavorite(1);
+                                            favoriteUnsplashImgViewModel.updateFavoriteUnsplashImg(element);
+                                        }
+                                    }
+                                }
+                            });
+                            // this is to add effect and logic for the small heart icon on the top-right corner
+                            holder.WhiteHeartIcon.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    holder.WhiteHeartIcon.setVisibility(View.GONE);
+                                    holder.RedHeartIcon.setVisibility(View.VISIBLE);
+                                    element.setIsFavorite(1);
+                                    favoriteUnsplashImgViewModel.updateFavoriteUnsplashImg(element);
+                                }
+                            });
+                            holder.RedHeartIcon.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    holder.WhiteHeartIcon.setVisibility(View.VISIBLE);
+                                    holder.RedHeartIcon.setVisibility(View.GONE);
+                                    holder.SmallLovingImageAnimatedDrawable = (AnimatedVectorDrawable) holder.RegularLovingdrawable;
+                                    holder.SmallLovingImageAnimatedDrawable.start();
+                                    element.setIsFavorite(0);
+                                    favoriteUnsplashImgViewModel.updateFavoriteUnsplashImg(element);
+                                }
+                            });
                             return false;
                         }
                     })
@@ -77,12 +132,21 @@ public class UnsplashImgAdapter extends RecyclerView.Adapter<UnsplashImgAdapter.
     protected class UnsplashImgViewHolder extends RecyclerView.ViewHolder{
         private final ImageView UnsplashImage;
         private final ImageView WhiteHeartIcon;
-        private ImageView RedHeartIcon;
+        private final ImageView RedHeartIcon;
+        private final ImageView InsHeartIcon;
+        // using the Animated Vector Drawable to add animation to the icon
+        private AnimatedVectorDrawable BiggestLovingImageAnimatedDrawable;
+        private AnimatedVectorDrawable SmallLovingImageAnimatedDrawable;
+        private final Drawable BiggestLovingdrawable;
+        private final Drawable RegularLovingdrawable;
         public UnsplashImgViewHolder(@NonNull View itemView) {
             super(itemView);
             UnsplashImage = itemView.findViewById(R.id.unsplashIMGID);
             WhiteHeartIcon = itemView.findViewById(R.id.WhiteHeartIconID);
             RedHeartIcon = itemView.findViewById(R.id.RedHeartIconID);
+            InsHeartIcon = itemView.findViewById(R.id.InsHeartIcon);
+            BiggestLovingdrawable = InsHeartIcon.getDrawable();
+            RegularLovingdrawable = RedHeartIcon.getDrawable();
         }
     }
 }

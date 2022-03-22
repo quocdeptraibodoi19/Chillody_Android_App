@@ -162,7 +162,6 @@ public class loving_playlist_fragment extends Fragment {
             YoutubeMusicElement LastElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration).tag;
             new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
         }
-
         // Processing the ExoPlayer
 
 
@@ -256,6 +255,7 @@ public class loving_playlist_fragment extends Fragment {
                 Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
                 YoutubeMusicElement LastElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration).tag;
                 new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+
             }
 //            singletonExoPlayer.getExoPlayer().addListener(listener);
         }

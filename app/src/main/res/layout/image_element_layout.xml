@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="#404343"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <ImageView
         android:id="@+id/unsplashIMGID"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:adjustViewBounds="true"/>
+        android:adjustViewBounds="true" />
+
 
     <ImageView
         android:id="@+id/WhiteHeartIconID"
@@ -18,13 +21,23 @@
         android:background="#CC000000"
         android:scaleType="center"
         android:layout_alignParentEnd="true"/>
+
     <ImageView
         android:id="@+id/RedHeartIconID"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:src="@drawable/heart_solid_24_red"
+        android:layout_alignParentEnd="true"
         android:background="#CC000000"
         android:scaleType="center"
-        android:layout_alignParentEnd="true"
-        android:visibility="invisible"/>
+        android:src="@drawable/avd_instagram_red_like"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/InsHeartIcon"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        app:srcCompat="@drawable/avd_sample_instagram_like" />
+
 </RelativeLayout>

@@ -2,6 +2,7 @@ package com.example.chillody.Activity_Fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,9 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,10 +26,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chillody.Adapter.UnsplashImgAdapter;
+import com.example.chillody.Model.FavoriteUnsplashImgViewModel;
 import com.example.chillody.Model.FavoriteYoutubeElement;
 import com.example.chillody.Model.FavoriteYoutubeViewModel;
 import com.example.chillody.Model.GeneralYoutubeViewModel;
 import com.example.chillody.Model.SingletonExoPlayer;
+import com.example.chillody.Model.UnsplashImgElement;
 import com.example.chillody.Model.YoutubeMusicElement;
 import com.example.chillody.Model.YoutubeMusicModel;
 import com.example.chillody.Networking.UnsplashAsynctask;
@@ -45,6 +51,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class music_fragment extends Fragment {
     private MusicLayoutFragmentBinding binding;
@@ -52,10 +60,13 @@ public class music_fragment extends Fragment {
     private YoutubeMusicModel youtubeMusicModel;
     private YoutubeExecutor youtubeExecutor;
     private FavoriteYoutubeViewModel favoriteYoutubeViewModel;
+    private FavoriteUnsplashImgViewModel favoriteUnsplashImgViewModel;
     private String page;
     private String ImgQuery;
     private String MusicQuery;
     private String nameOfCategory;
+    private int currentImagePage;
+    private int currentImagePosition;
     private TextView CurrentSongNameTextView, NextSongNameTextView;
     private final static String PAGE_MESSAGE = "Here is the page message";
     private final static String IMAGE_QUERY_MESSAGE = "Here is the image query message";
@@ -64,6 +75,8 @@ public class music_fragment extends Fragment {
     private int MediaItemPosition;
     private boolean isHappenBefore = false;
     private LiveData<List<YoutubeMusicElement>> youtubeSongLists;
+    private final static String UNSPLASH_IMG_CURRENT_POS_FLAG ="NDQNTNUNSPLASHNDCIMG";
+    private final static String UNSPLASH_IMG_CURRENT_CURRENT_PAGE_FLAG = "AhHyoSeopKimSeJongProposalBussiness";
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +102,8 @@ public class music_fragment extends Fragment {
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         sharedPreferences = Objects.requireNonNull(getContext()).getSharedPreferences(home_fragment.sharedFile+nameOfCategory, Context.MODE_PRIVATE);
         MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
+        currentImagePage = sharedPreferences.getInt(UNSPLASH_IMG_CURRENT_CURRENT_PAGE_FLAG,1);
+        currentImagePosition = sharedPreferences.getInt(UNSPLASH_IMG_CURRENT_POS_FLAG,0);
     }
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -106,13 +121,14 @@ public class music_fragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        favoriteUnsplashImgViewModel = ViewModelProviders.of(this).get(FavoriteUnsplashImgViewModel.class);
         favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
         unsplashImgModel = ViewModelProviders.of(this).get(UnsplashImgModel.class);
         GeneralYoutubeViewModel generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         youtubeExecutor = new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication());
         binding.ProgressBarID.setIndeterminateDrawable(new FoldingCube());
-        UnsplashImgAdapter unsplashImgAdapter = new UnsplashImgAdapter(binding.getRoot().getContext(),binding.ProgressBarID);
+        UnsplashImgAdapter unsplashImgAdapter = new UnsplashImgAdapter(binding.getRoot().getContext(),binding.ProgressBarID,favoriteUnsplashImgViewModel);
         binding.RecyclerImgViewID.setAdapter(unsplashImgAdapter);
         binding.RecyclerImgViewID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
         CurrentSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.musiclayouttitletrackID);
@@ -314,17 +330,58 @@ public class music_fragment extends Fragment {
                 generalYoutubeViewModel.updateDislikeMusicElement(element);
             }
         });
+        // This is for the case of orientation change... Because in the observer block, the if condition is set for the case in which we first navigate to the category
+        if(unsplashImgModel.isContainSomething()){
+            binding.ProgressBarID.setVisibility(View.VISIBLE);
+            unsplashImgAdapter.setElement(unsplashImgModel.getCurrentElement());
+        }
         // process the image:
         //Todo: Do optimization and cache the url of image in here to avoid the waste in API calls
         // We can use SQlite or SharedReference to locally cache the Urls (cache the UnsplashModel)
-
-        if(unsplashImgModel.getRemainedNumber() == 0){
-            binding.ProgressBarID.setVisibility(View.VISIBLE);
-            new UnsplashAsynctask(unsplashImgAdapter,unsplashImgModel,ImgQuery,page).execute();
-        }
-        else{
-            unsplashImgAdapter.setElement(unsplashImgModel.getCurrentElement());
-        }
+        // observe the data
+        unsplashImgModel.getObservableUnsplashImgList(nameOfCategory).observe(getViewLifecycleOwner(), new Observer<List<UnsplashImgElement>>() {
+            @Override
+            public void onChanged(List<UnsplashImgElement> unsplashImgElements) {
+                // This is for the first navigation to the category, when the system loads data from the database
+                if(unsplashImgElements.size() == 0){
+                    binding.ProgressBarID.setVisibility(View.VISIBLE);
+                    Log.d("Ah", "onChanged: in the first if");
+                    new UnsplashAsynctask(unsplashImgAdapter,unsplashImgModel,ImgQuery,page,nameOfCategory).execute();
+                }
+                else if(unsplashImgModel.getRemainedNumber() == 0){
+                    Log.d("Ah", "onChanged: in the second condition");
+                    binding.ProgressBarID.setVisibility(View.VISIBLE);
+                    unsplashImgModel.setCurPage(currentImagePage);
+                    unsplashImgModel.setCurPosition(currentImagePosition);
+                    Log.d("Ah", "onChanged: the current position: "+ String.valueOf(unsplashImgModel.getCur()));
+                    Handler handler = new Handler(Looper.getMainLooper()){
+                        @Override
+                        public void handleMessage(@NonNull Message msg) {
+                            super.handleMessage(msg);
+                            unsplashImgAdapter.setElement((UnsplashImgElement) msg.obj);
+                            Log.d("Ah", "handleMessage: the artist: "+ ((UnsplashImgElement) msg.obj).getArtistName());
+                        }
+                    };
+                    ExecutorService service = Executors.newSingleThreadExecutor();
+                    service.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d("Ah", "run: The size of the unsplash list: "+ String.valueOf(unsplashImgElements.size()));
+                            for(int i=0;i< unsplashImgElements.size();i++)
+                            {
+                                unsplashImgModel.addElement(unsplashImgElements.get(i));
+                                if(i == unsplashImgModel.getCur()){
+                                    Message message = new Message();
+                                    message.obj = unsplashImgElements.get(i);
+                                    handler.sendMessage(message);
+                                }
+                            }
+                        }
+                    });
+                    service.shutdown();
+                }
+            }
+        });
 
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT) {
             @Override
@@ -346,7 +403,7 @@ public class music_fragment extends Fragment {
                     binding.ProgressBarID.setVisibility(View.VISIBLE);
                     if(unsplashImgModel.getRemainedNumber()==0){
                         unsplashImgModel.UpdatePage();
-                        new UnsplashAsynctask(unsplashImgAdapter,unsplashImgModel,ImgQuery,String.valueOf(unsplashImgModel.getCurPage())).execute();
+                        new UnsplashAsynctask(unsplashImgAdapter,unsplashImgModel,ImgQuery,String.valueOf(unsplashImgModel.getCurPage()),nameOfCategory).execute();
                     }
                     else{
                         unsplashImgAdapter.setElement(unsplashImgModel.getCurrentElement());
@@ -372,6 +429,8 @@ public class music_fragment extends Fragment {
         ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
         MediaItemPosition =exoPlayer.getCurrentMediaItemIndex();
         editor.putInt(home_fragment.LAST_EXOPOSITEM_STATE,MediaItemPosition);
+        editor.putInt(UNSPLASH_IMG_CURRENT_CURRENT_PAGE_FLAG,unsplashImgModel.getCurPage());
+        editor.putInt(UNSPLASH_IMG_CURRENT_POS_FLAG,unsplashImgModel.getCur());
         editor.apply();
 
     }

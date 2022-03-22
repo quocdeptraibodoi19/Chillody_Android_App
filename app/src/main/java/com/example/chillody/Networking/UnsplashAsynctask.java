@@ -34,11 +34,13 @@ public class UnsplashAsynctask extends AsyncTask<Void,Void,String> {
     private final WeakReference<UnsplashImgAdapter> unsplashImgAdapter;
     private String Query = "query=";
     private String Page = "page=";
-    public UnsplashAsynctask(UnsplashImgAdapter adapter, UnsplashImgModel model, String Query, String Page){
+    public String type;
+    public UnsplashAsynctask(UnsplashImgAdapter adapter, UnsplashImgModel model, String Query, String Page,String type){
         this.UnsplashImgModel = model;
         this.Query += Query;
         this.Page += Page;
         this.unsplashImgAdapter = new WeakReference<>(adapter);
+        this.type = type;
     }
     @Override
     protected String doInBackground(Void... voids) {
@@ -61,8 +63,11 @@ public class UnsplashAsynctask extends AsyncTask<Void,Void,String> {
         try {
             JSONObject object = new JSONObject(s);
             JSONArray jsonArray = object.getJSONArray("results");
+            UnsplashImgElement element;
             for(int i =0 ; i< jsonArray.length();i++){
-                UnsplashImgModel.addElement(new UnsplashImgElement(jsonArray.getJSONObject(i)));
+                element = new UnsplashImgElement(jsonArray.getJSONObject(i),type);
+                UnsplashImgModel.addElement(element);
+                UnsplashImgModel.addElementIntoRes(element);
             }
             if(unsplashImgAdapter.get() != null)
             unsplashImgAdapter.get().setElement(UnsplashImgModel.getCurrentElement());
