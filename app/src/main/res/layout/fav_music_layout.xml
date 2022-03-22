@@ -68,5 +68,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     tools:listitem="@layout/fav_music_item"/>
+                <include
+                    layout="@layout/my_controller_layout"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_marginBottom="10dp"
+                     android:visibility="invisible"/>
         </LinearLayout>
 </ScrollView>
