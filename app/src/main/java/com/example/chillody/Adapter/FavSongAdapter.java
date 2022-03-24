@@ -92,9 +92,24 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                     if(!favoriteYoutubeElements.get(getLayoutPosition()).getType().equals(singletonExoPlayer.getType()))
                     {
                         Log.d("MusicElement", "onClick: if 1");
+                        Log.d("MusicElement", "onClick: real position: "+ String.valueOf(getLayoutPosition()));
                         singletonExoPlayer.setType(favoriteYoutubeElements.get(getLayoutPosition()).getType());
                         singletonExoPlayer.EndMusic();
-                        AddSongsIntoExoPlayer();
+                        for(int i=0;i<favoriteYoutubeElements.size();i++){
+                            MediaItem mediaItem = new MediaItem.Builder()
+                                    .setUri(favoriteYoutubeElements.get(i).getDownloadedMusicUrl())
+                                    .setTag(favoriteYoutubeElements.get(i).getYoutubeMusicElement())
+                                    .build();
+                            singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
+                            if(i == getLayoutPosition())
+                            {
+                                // when using the seekto remember to add positionMs
+                                Log.d("MusicElement", "onClick: i is: "+ String.valueOf(i));
+                                singletonExoPlayer.getExoPlayer().prepare();
+                                singletonExoPlayer.getExoPlayer().seekTo(i,0);
+                                singletonExoPlayer.getExoPlayer().play();
+                            }
+                        }
                     }
                     // this is when the list in the singleton is matching with the real list in the loving fragment
                     else{
@@ -161,23 +176,6 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                     }
                 }
             });
-        }
-        private void AddSongsIntoExoPlayer(){
-            if(singletonExoPlayer.getExoPlayer().getMediaItemCount()!=0)
-                singletonExoPlayer.EndMusic();
-            for(int i=0;i<favoriteYoutubeElements.size();i++){
-                MediaItem mediaItem = new MediaItem.Builder()
-                        .setUri(favoriteYoutubeElements.get(i).getDownloadedMusicUrl())
-                        .setTag(favoriteYoutubeElements.get(i).getYoutubeMusicElement())
-                        .build();
-                singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
-                if(i == getLayoutPosition())
-                {
-                    singletonExoPlayer.getExoPlayer().prepare();
-                    singletonExoPlayer.getExoPlayer().seekTo(i);
-                    singletonExoPlayer.getExoPlayer().play();
-                }
-            }
         }
     }
 }
