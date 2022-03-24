@@ -57,6 +57,8 @@ public class YoutubeExecutor  {
     private ExecutorService executorService;
     private final GeneralSongRepository repository;
     private final FavSongRepository favSongRepository;
+    private int countFail = 0;
+    private YoutubeMusicElement FailingElement = null;
     public YoutubeExecutor(@NonNull Application application) {
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
         repository =  new GeneralSongRepository(application);
@@ -253,6 +255,13 @@ public class YoutubeExecutor  {
                         // But as mentioned above, the Uri cannot be changed because it does not have any set methods ( so stupid :) )
                         // therefore, the only way you can do is to remove the current one and substitute it with the new instance of that object.
                        element.setDownloadedMusicUrl((String) msg.obj);
+                       if(FailingElement == null || FailingElement != element) {FailingElement = element; countFail =0;}
+                       if(countFail == 2){
+                           FailingElement = null;
+                           countFail = 0;
+                           player.removeMediaItem(position);
+                           return;
+                       }
                         // why you have to add it at position +1 because this function will add the new object at that index +1 ( it means that the new added item' position will lie in that position +1 )
                        player.addMediaItem(position+1,new MediaItem.Builder().setUri(element.getDownloadedMusicUrl()).setTag(element).build());
                        // you remove the current old one :) .... so stupid. I don't understand why they do not provide the set method for the Uri object :).
@@ -269,6 +278,7 @@ public class YoutubeExecutor  {
                        player.prepare();
                        // because there is just one instance of message.Therefore, we can mark the finish flag here.
                         singletonExoPlayer.setThreadProcessing(false);
+                        countFail++;
                     }
                 }
             }
