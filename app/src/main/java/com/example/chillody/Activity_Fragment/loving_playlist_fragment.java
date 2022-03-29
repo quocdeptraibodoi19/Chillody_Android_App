@@ -70,6 +70,7 @@ public class loving_playlist_fragment extends Fragment {
         Log.d("QuocLovingPlaylist", "onCreateView: create the fragment");
         singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         binding = LovingPlaylistFragmentLayoutBinding.inflate(inflater,container,false);
+        getActivity().setTitle("Loving Chillody");
         return binding.getRoot();
     }
 

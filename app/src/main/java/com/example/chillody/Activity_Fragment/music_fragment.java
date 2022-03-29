@@ -87,14 +87,17 @@ public class music_fragment extends Fragment {
             case "Chilling":
                 ImgQuery = "sadness city";
                 MusicQuery = "Ta da tung yeu nhau chua hao\n";
+                Objects.requireNonNull(getActivity()).setTitle("Chilling Chillody");
                 break;
             case "Ghibli":
                 ImgQuery = "kyoto";
                 MusicQuery = "Studio Ghibli Emotional Melody : Cello Collection with Calcifer[作業用、睡眠用BGM、ジブリのチェロメドレー、吉卜力大提琴音樂集]";
+                Objects.requireNonNull(getActivity()).setTitle("Ghibli Chillody");
                 break;
             case "Cafe":
                 ImgQuery = "cozy cafe";
                 MusicQuery = "japanese night cafe vibes / a lofi hip hop mix ~ chill with taiki";
+                Objects.requireNonNull(getActivity()).setTitle("Cafe Chillody");
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + nameOfCategory);

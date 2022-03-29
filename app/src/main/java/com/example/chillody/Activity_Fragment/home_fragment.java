@@ -81,6 +81,7 @@ public class home_fragment extends Fragment {
         Log.d("QuocLife", "HomeFragment: onCreateView: ");
         // Inflate the layout for this fragment
         binding =HomeLayoutFragmentBinding.inflate(inflater,container,false);
+        Objects.requireNonNull(getActivity()).setTitle("Chillody");
         return binding.getRoot();
     }
 
