@@ -4,8 +4,13 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,39 +19,35 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 // this is to update the Music Quote and its author for the layout.home layout fragment
 public class MusicQuoteAsyncTask extends AsyncTask<Void,Void,String> {
     private final WeakReference<TextView> musicQuoteView;
     private final WeakReference<TextView> authormusicQuoteView;
-    private ProgressDialog dialog;
-    private  Context context;
-    public MusicQuoteAsyncTask(TextView musicView, TextView authorView, Context context){
+    private String artist,quote;
+    public MusicQuoteAsyncTask(TextView musicView, TextView authorView,String artist, String quote){
         this.musicQuoteView = new WeakReference<>(musicView);
         this.authormusicQuoteView = new WeakReference<>(authorView);
-        this.context = context;
+        this.artist = artist;
+        this.quote = quote;
     }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        dialog =new ProgressDialog(context);
-        dialog.setMessage("Loading...");
-        dialog.show();
-    }
-
     @Override
     protected String doInBackground(Void... voids) {
         OkHttpClient client = new OkHttpClient();
 
+        MediaType mediaType = MediaType.parse("application/json");
+        RequestBody body = RequestBody.create(mediaType, "{\r\n    \"key1\": \"value\",\r\n    \"key2\": \"value\"\r\n}");
         Request request = new Request.Builder()
-                .url("https://metal-music-quotes.p.rapidapi.com/quotes")
-                .get()
-                .addHeader("x-rapidapi-host", "metal-music-quotes.p.rapidapi.com")
-                .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
+                .url("https://motivational-quotes1.p.rapidapi.com/motivation")
+                .post(body)
+                .addHeader("content-type", "application/json")
+                .addHeader("X-RapidAPI-Host", "motivational-quotes1.p.rapidapi.com")
+                .addHeader("X-RapidAPI-Key", "2347dba099msh0ada479f8c42f9dp144201jsn8fc8b09b17f7")
                 .build();
 
         try {
@@ -54,7 +55,6 @@ public class MusicQuoteAsyncTask extends AsyncTask<Void,Void,String> {
             return Objects.requireNonNull(response.body()).string();
         } catch (IOException e) {
             e.printStackTrace();
-            Log.d("MusicQuoteAsyncTask", "doInBackground: Something related to response fails");
         }
         return null;
     }
@@ -62,16 +62,34 @@ public class MusicQuoteAsyncTask extends AsyncTask<Void,Void,String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
-        dialog.dismiss();
-        String artist = "- ";
-        try {
-            JSONObject data = new JSONObject(s);
-             artist += data.getJSONObject("data").getString("artist");
-            String quote = data.getJSONObject("data").getString("quote");
-            musicQuoteView.get().setText(quote);
-            authormusicQuoteView.get().setText(artist);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if(s==null){
+            musicQuoteView.get().setText("");
+            authormusicQuoteView.get().setText("");
+            return;
         }
+        Handler handler = new Handler(Looper.getMainLooper()){
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                musicQuoteView.get().setText(quote);
+                authormusicQuoteView.get().setText(artist);
+            }
+        };
+        Thread thread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                for(int i=1;i< s.length(); i++)
+                {
+                    if(s.charAt(i) == '"'){
+                        quote = s.substring(1,i-1);
+                        artist = s.substring(i+1,s.length()-1);
+                    }
+                }
+                Message message = new Message();
+                handler.sendMessage(message);
+            }
+        };
+        thread.start();
     }
 }

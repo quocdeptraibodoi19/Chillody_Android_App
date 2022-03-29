@@ -28,6 +28,7 @@ import com.example.chillody.Model.GeneralYoutubeViewModel;
 import com.example.chillody.Model.SingletonExoPlayer;
 import com.example.chillody.Model.YoutubeMusicElement;
 import com.example.chillody.Model.categoryObj;
+import com.example.chillody.Networking.MusicQuoteAsyncTask;
 import com.example.chillody.Networking.YoutubeExecutor;
 import com.example.chillody.R;
 import com.example.chillody.databinding.HomeLayoutFragmentBinding;
@@ -58,6 +59,7 @@ public class home_fragment extends Fragment {
     private TextView titleTrackTextview;
     private Player.Listener listener;
     private String exoPlayerType;
+    private String artist = "",quote="";
     private int MediaItemPosition;
     private boolean isHappenBefore = false;
     private ImageView RedHeartIcon,WhiteHeartIcon;
@@ -82,6 +84,19 @@ public class home_fragment extends Fragment {
         // Inflate the layout for this fragment
         binding =HomeLayoutFragmentBinding.inflate(inflater,container,false);
         Objects.requireNonNull(getActivity()).setTitle("Chillody");
+        // this is for the feature that when we first load the home_fragment, the new quote will add to the textview
+        if(binding.MusicQuoteID.getText().equals(getString(R.string.preview_text)) && !isHappenBefore)
+        {
+            Log.d("lucquoc", "onCreateView: inside the executing of quote");
+            binding.MusicQuoteID.setText(getString(R.string.loading));
+            binding.ArtistID.setText("");
+            new MusicQuoteAsyncTask(binding.MusicQuoteID, binding.ArtistID,artist,quote).execute();
+        }
+        // for other time when the home_fragment is loaded (second time, third time...), this view will use the old quote to save the resource, the limit of time accessing the API
+        else{
+            binding.MusicQuoteID.setText(quote);
+            binding.ArtistID.setText(artist);
+        }
         return binding.getRoot();
     }
 
@@ -271,6 +286,8 @@ public class home_fragment extends Fragment {
        editor.putInt(LAST_EXOPOSITEM_STATE,MediaItemPosition);
         Log.d("QuocBug", "onPause: MediaPosition: "+String.valueOf(MediaItemPosition));
        editor.putString(LAST_EXOTYPE_STATE,exoPlayerType);
+       artist = binding.ArtistID.getText().toString();
+       quote = binding.MusicQuoteID.getText().toString();
        editor.apply();
     }
     @Override
