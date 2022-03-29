@@ -26,9 +26,11 @@ public class SingletonExoPlayer {
         return exoPlayer;
     }
     public void EndMusic(){
+        if(exoPlayer.getMediaItemCount() != 0) {
             exoPlayer.stop();
             exoPlayer.clearMediaItems();
             Log.d("QuocBug", "EndMusic: "+ String.valueOf(exoPlayer.getMediaItemCount()));
+        }
     }
     public void setType(String type){
         this.type = type;
@@ -54,4 +56,5 @@ public class SingletonExoPlayer {
     public void setErrorProcessedFlag(boolean isErrorProcessed){
         this.isErrorProcessed = isErrorProcessed;
     }
+
 }

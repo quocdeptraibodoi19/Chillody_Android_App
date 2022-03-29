@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.chillody.Model.FavoriteRecyclerViewManager;
 import com.example.chillody.Model.FavoriteYoutubeElement;
 import com.example.chillody.Model.FavoriteYoutubeViewModel;
 import com.example.chillody.Model.GeneralYoutubeViewModel;
@@ -37,7 +38,8 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
     private final GeneralYoutubeViewModel generalYoutubeViewModel;
     private final TextView TitleTrack;
     private final ImageView whiteBtn, redBtn;
-    public FavSongAdapter(Context context, Application application, FavoriteYoutubeViewModel model, GeneralYoutubeViewModel generalYoutubeViewModel,TextView NameSong,ImageView whiteBtn, ImageView redBtn){
+    private final FavoriteRecyclerViewManager favoriteRecyclerViewManager;
+    public FavSongAdapter(Context context, Application application, FavoriteYoutubeViewModel model, GeneralYoutubeViewModel generalYoutubeViewModel,TextView NameSong,ImageView whiteBtn, ImageView redBtn,FavoriteRecyclerViewManager manager){
         layoutInflater = LayoutInflater.from(context);
         favoriteYoutubeElements = null;
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
@@ -46,6 +48,7 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
         this.TitleTrack = NameSong;
         this.whiteBtn = whiteBtn;
         this.redBtn = redBtn;
+        this.favoriteRecyclerViewManager = manager;
     }
     @NonNull
     @Override
@@ -63,37 +66,18 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
             Log.d("QuocBug", "onBindViewHolder: title is : " +favoriteYoutubeElements.get(position).getTitle() );
             Log.d("QuocBug", "onBindViewHolder: position: "+String.valueOf(position));
             holder.SongTitle.setText(favoriteYoutubeElements.get(position).getTitle());
-        }
-
-    }
-
-    public void setCurrentList(List<FavoriteYoutubeElement> elementList){
-        Log.d("QuocBug", "setCurrentList: ignite");
-        this.favoriteYoutubeElements = elementList;
-        notifyDataSetChanged();
-    }
-    @Override
-    public int getItemCount() {
-        if(favoriteYoutubeElements == null) return 0;
-         return favoriteYoutubeElements.size();
-    }
-     class FavSongViewHolder extends RecyclerView.ViewHolder{
-        private final TextView SongTitle;
-
-         public FavSongViewHolder(@NonNull View itemView) {
-            super(itemView);
-            SongTitle = itemView.findViewById(R.id.nameItemID);
-             ImageView playIMG = itemView.findViewById(R.id.PlayID);
-             ImageView trashIMG = itemView.findViewById(R.id.trashID);
-            playIMG.setOnClickListener(new View.OnClickListener() {
+            holder.playIMG.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // this is the case in which from other type we navigate to the loving music list
-                    if(!favoriteYoutubeElements.get(getLayoutPosition()).getType().equals(singletonExoPlayer.getType()))
+                    if(singletonExoPlayer.getType().equals(favoriteRecyclerViewManager.getType()) && holder.getLayoutPosition() == favoriteRecyclerViewManager.getPosition()) {
+                        singletonExoPlayer.getExoPlayer().play();
+                    }
+                    else if(!favoriteYoutubeElements.get(holder.getLayoutPosition()).getType().equals(singletonExoPlayer.getType()))
                     {
                         Log.d("MusicElement", "onClick: if 1");
-                        Log.d("MusicElement", "onClick: real position: "+ String.valueOf(getLayoutPosition()));
-                        singletonExoPlayer.setType(favoriteYoutubeElements.get(getLayoutPosition()).getType());
+                        Log.d("MusicElement", "onClick: real position: "+ String.valueOf(holder.getLayoutPosition()));
+                        singletonExoPlayer.setType(favoriteYoutubeElements.get(holder.getLayoutPosition()).getType());
                         singletonExoPlayer.EndMusic();
                         for(int i=0;i<favoriteYoutubeElements.size();i++){
                             MediaItem mediaItem = new MediaItem.Builder()
@@ -101,35 +85,46 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                                     .setTag(favoriteYoutubeElements.get(i).getYoutubeMusicElement())
                                     .build();
                             singletonExoPlayer.getExoPlayer().addMediaItem(mediaItem);
-                            if(i == getLayoutPosition())
-                            {
-                                // when using the seekto remember to add positionMs
-                                Log.d("MusicElement", "onClick: i is: "+ String.valueOf(i));
-                                singletonExoPlayer.getExoPlayer().prepare();
-                                singletonExoPlayer.getExoPlayer().seekTo(i,0);
-                                singletonExoPlayer.getExoPlayer().play();
-                            }
                         }
+                        // when using the seekto remember to add positionMs
+                        Log.d("MusicElement", "onClick: i is: "+ String.valueOf(holder.getLayoutPosition()));
+                        singletonExoPlayer.getExoPlayer().pause();
+                        singletonExoPlayer.getExoPlayer().prepare();
+                        singletonExoPlayer.getExoPlayer().seekTo(holder.getLayoutPosition(),0);
+                        singletonExoPlayer.getExoPlayer().play();
                     }
                     // this is when the list in the singleton is matching with the real list in the loving fragment
                     else{
-                        Log.d("MusicElement", "onClick: if "+ String.valueOf(getLayoutPosition()));
-                        singletonExoPlayer.getExoPlayer().seekTo(getLayoutPosition(),0);
+                        Log.d("MusicElement", "onClick: if "+ String.valueOf(holder.getLayoutPosition()));
+                        singletonExoPlayer.getExoPlayer().pause();
+                        singletonExoPlayer.getExoPlayer().seekTo(holder.getLayoutPosition(),0);
                         singletonExoPlayer.getExoPlayer().prepare();
                         singletonExoPlayer.getExoPlayer().play();
                     }
-                    TitleTrack.setText(favoriteYoutubeElements.get(getLayoutPosition()).getTitle());
+                    TitleTrack.setText(favoriteYoutubeElements.get(holder.getLayoutPosition()).getTitle());
                 }
             });
-            trashIMG.setOnClickListener(new View.OnClickListener() {
+            holder.pauseIMG.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // this is the view of the current item
+                    holder.pauseIMG.setVisibility(View.GONE);
+                    holder.playIMG.setVisibility(View.VISIBLE);
+                    singletonExoPlayer.getExoPlayer().pause();
+                }
+            });
+            // the reason why when you click the trash icon to delete a song from the favorite list, the pause icon move immediately to the next one:
+            // that because for example, the song you want to delete has the 2nd position, (currently the pause icon is visible)
+            // when deleteing it, the 3rd song will turn into the 2nd song and pause icon will be visible
+            holder.trashIMG.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if(favoriteYoutubeElements.size() != 0)
                     {
-                        generalYoutubeViewModel.updateDislikeMusicElement(favoriteYoutubeElements.get(getLayoutPosition()).getMusicID());
+                        generalYoutubeViewModel.updateDislikeMusicElement(favoriteYoutubeElements.get(holder.getLayoutPosition()).getMusicID());
                         if(singletonExoPlayer.getExoPlayer().getMediaItemCount() != 0)
                         {
-                            if(favoriteYoutubeElements.get(getLayoutPosition()).getType().contains(singletonExoPlayer.getType())){
+                            if(favoriteYoutubeElements.get(holder.getLayoutPosition()).getType().contains(singletonExoPlayer.getType())){
                                 // the newfixedthreadpool is the same thing with newsinglethread
                                 // the reason why we do this here is because we want to propagate the checking process
                                 // into another thread to avoid lowing down the users' experience
@@ -141,41 +136,70 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                                 {
                                     item = singletonExoPlayer.getExoPlayer().getMediaItemAt(i);
                                     if(item.localConfiguration != null)
+                                    {
+                                        element = (YoutubeMusicElement) item.localConfiguration.tag;
+                                        if(element.getMusicID().equals(favoriteYoutubeElements.get(holder.getLayoutPosition()).getMusicID()))
                                         {
-                                            element = (YoutubeMusicElement) item.localConfiguration.tag;
-                                            if(element.getMusicID().equals(favoriteYoutubeElements.get(getLayoutPosition()).getMusicID()))
+                                            // this can update UI of the music bar
+                                            // because owing to some magical logics, element bellow still reference to the object
+                                            // store in the localConfiguration.tag.
+                                            element.setFavorite(false);
+                                            if(element.getMusicType().contains("Love"))
                                             {
-                                                // this can update UI of the music bar
-                                                // because owing to some magical logics, element bellow still reference to the object
-                                                // store in the localConfiguration.tag.
-                                                element.setFavorite(false);
-                                                if(element.getMusicType().contains("Love"))
-                                                {
-                                                    singletonExoPlayer.getExoPlayer().removeMediaItem(i);
-                                                    if(favoriteYoutubeElements.size() == 1) {
-                                                        TitleTrack.setText(R.string.NoSong_Notification);
-                                                        whiteBtn.setVisibility(View.VISIBLE);
-                                                        redBtn.setVisibility(View.GONE);
-                                                    }
+                                                singletonExoPlayer.getExoPlayer().removeMediaItem(i);
+                                                if(singletonExoPlayer.getType().equals(favoriteRecyclerViewManager.getType()) && i == favoriteRecyclerViewManager.getPosition()) {
+                                                    favoriteRecyclerViewManager.setPosition(-1);
                                                 }
-                                                // this is not in the scope of loving music... thus, when clicking the trash, the song in the exoplayer is not cleared...
-                                                // therefore, we need to update the UI...
-                                                else{
+                                                if(favoriteYoutubeElements.size() == 1) {
+                                                    TitleTrack.setText(R.string.NoSong_Notification);
                                                     whiteBtn.setVisibility(View.VISIBLE);
                                                     redBtn.setVisibility(View.GONE);
                                                 }
-                                                break;
                                             }
+                                            // this is not in the scope of loving music... thus, when clicking the trash, the song in the exoplayer is not cleared...
+                                            // therefore, we need to update the UI...
+                                            else{
+                                                whiteBtn.setVisibility(View.VISIBLE);
+                                                redBtn.setVisibility(View.GONE);
+                                            }
+                                            favoriteYoutubeViewModel.DeleteSongElements(favoriteYoutubeElements.get(holder.getLayoutPosition()));
+                                            break;
                                         }
+                                    }
                                 }
                             }
                         }
-                        favoriteYoutubeViewModel.DeleteSongElements(favoriteYoutubeElements.get(getLayoutPosition()));
-                        favoriteYoutubeElements.remove(getLayoutPosition());
-                        notifyDataSetChanged();
                     }
                 }
             });
+        }
+
+    }
+
+    public void setCurrentList(List<FavoriteYoutubeElement> elementList){
+        Log.d("QuocBug", "setCurrentList: ignite");
+        if(favoriteYoutubeElements != null)
+        Log.d("nika", "setCurrentList: the size of old one: "+ String.valueOf(favoriteYoutubeElements.size()));
+        Log.d("nika", "setCurrentList: the size of the new one: "+ String.valueOf(elementList.size()));
+        this.favoriteYoutubeElements = elementList;
+        notifyDataSetChanged();
+    }
+    @Override
+    public int getItemCount() {
+        if(favoriteYoutubeElements == null) return 0;
+         return favoriteYoutubeElements.size();
+    }
+     class FavSongViewHolder extends RecyclerView.ViewHolder{
+        private final TextView SongTitle;
+        private final ImageView playIMG;
+         private ImageView trashIMG;
+         private ImageView pauseIMG;
+         public FavSongViewHolder(@NonNull View itemView) {
+            super(itemView);
+            SongTitle = itemView.findViewById(R.id.nameItemID);
+              playIMG = itemView.findViewById(R.id.PlayID);
+              trashIMG = itemView.findViewById(R.id.trashID);
+              pauseIMG = itemView.findViewById(R.id.PauseID);
         }
     }
 }

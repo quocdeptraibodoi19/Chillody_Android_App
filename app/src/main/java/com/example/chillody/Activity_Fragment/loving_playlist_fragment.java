@@ -105,37 +105,40 @@ public class loving_playlist_fragment extends Fragment {
 
             }
         });
-        WhiteLoveBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
-                Log.d("Luc", "onClick: in the outer white");
-                if(item != null && item.localConfiguration != null){
-                    Log.d("Luc", "onClick: in the inner white");
-                    YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
-                    WhiteLoveBtn.setVisibility(View.GONE);
-                    RedLoveBtn.setVisibility(View.VISIBLE);
-                    // I don't know why the YoutubeMusicElement in the tag is really the real instance ...
-                    // this is so magic.. I though that it's just a hashed object.
-                    element.setFavorite(true);
-                    favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
-                    generalYoutubeViewModel.updateLikeSong(element);
-                }
-            }
-        });
-        RedLoveBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("Luc", "onClick: In the love ");
-                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
-                WhiteLoveBtn.setVisibility(View.VISIBLE);
-                RedLoveBtn.setVisibility(View.GONE);
-                YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
-                element.setFavorite(false);
-                favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
-                generalYoutubeViewModel.updateDislikeMusicElement(element);
-            }
-        });
+//        WhiteLoveBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+//                SingletonExoPlayer.WhiteClick();
+//                if(item != null && item.localConfiguration != null){
+//                    YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+//                    WhiteLoveBtn.setVisibility(View.GONE);
+//                    RedLoveBtn.setVisibility(View.VISIBLE);
+//                    // I don't know why the YoutubeMusicElement in the tag is really the real instance ...
+//                    // this is so magic.. I though that it's just a hashed object.
+//                    element.setFavorite(true);
+//                    Log.d("cak", "onClick: WHITE");
+//                    Log.d("cak", "onClick: CON VALUE OF WHITE: "+ String.valueOf(SingletonExoPlayer.isWhiteClick()));
+//                    favoriteYoutubeViewModel.InsertFavoriteSongs(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
+//                    generalYoutubeViewModel.updateLikeSong(element);
+//                }
+//            }
+//        });
+//        RedLoveBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                SingletonExoPlayer.RedClick();
+//                Log.d("Luc", "onClick: In the love ");
+//                MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
+//                WhiteLoveBtn.setVisibility(View.VISIBLE);
+//                RedLoveBtn.setVisibility(View.GONE);
+//                YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+//                element.setFavorite(false);
+//                Log.d("cak", "onClick: RED");
+//                favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), (!singletonExoPlayer.getType().contains("Love"))? singletonExoPlayer.getType()+"Love":singletonExoPlayer.getType()));
+//                generalYoutubeViewModel.updateDislikeMusicElement(element);
+//            }
+//        });
         MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
         if(item != null && item.localConfiguration != null)
         {
@@ -267,7 +270,7 @@ public class loving_playlist_fragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         Log.d("QuocLovingPlaylist", "onDestroy: Destroy");
-        if(singletonExoPlayer.getExoPlayer() != null)
-        singletonExoPlayer.getExoPlayer().removeListener(listener);
+//        if(singletonExoPlayer.getExoPlayer() != null)
+//        singletonExoPlayer.getExoPlayer().removeListener(listener);
     }
 }

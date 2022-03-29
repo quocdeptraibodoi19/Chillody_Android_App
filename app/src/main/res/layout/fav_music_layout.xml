@@ -29,6 +29,7 @@
                     android:id="@+id/ChillingfavmusiclistID"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:overScrollMode="never"
                     tools:listitem="@layout/fav_music_item"/>
 
                 <TextView
@@ -48,6 +49,7 @@
                     android:id="@+id/CafefavmusiclistID"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingBottom="14dp"
                     tools:listitem="@layout/fav_music_item"/>
 
                 <TextView
@@ -67,6 +69,7 @@
                     android:id="@+id/GhiblifavmusiclistID"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingBottom="14dp"
                     tools:listitem="@layout/fav_music_item"/>
                 <include
                     layout="@layout/my_controller_layout"

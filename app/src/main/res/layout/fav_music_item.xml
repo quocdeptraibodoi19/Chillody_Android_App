@@ -5,6 +5,13 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
+    <!-- If you want to limit your textview in one single line:
+    you can set the maxWidth for your TextView.
+    and then you can do:
+    + MaxLine: 1,2,3,4 will define the maximum number of line that your textview can store
+    + singleLine = true: It will automatically set for your textview 1 line of text
+    and it will reformat your textview like "abcdef" into "abc..." to fit the line
+    -->
 
     <RelativeLayout
         android:id="@+id/favmusicitemID"
@@ -27,7 +34,8 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="12dp"
             android:fontFamily="@font/roboto"
-            android:maxWidth="300dp"
+            android:singleLine="true"
+            android:maxWidth="400dp"
             android:text="@string/preview_text"
             android:textColor="#FCFCFC"
             android:textSize="16sp" />
@@ -49,6 +57,15 @@
             android:layout_marginEnd="4dp"
             android:layout_toStartOf="@+id/trashID"
             android:src="@drawable/ic_play_ver2" />
+        <ImageView
+            android:id="@+id/PauseID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="4dp"
+            android:layout_toStartOf="@+id/trashID"
+            android:visibility="gone"
+            android:src="@drawable/ic_pause_24"/>
     </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
