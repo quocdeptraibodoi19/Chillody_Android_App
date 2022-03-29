@@ -6,14 +6,27 @@
     android:background="#5959C2"
     android:padding="8dp"
     android:orientation="vertical">
-
+    <!--
+    If you want to make the text run on your textview, you have to set:
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        and in the java code:
+        You have to execute: view.setSelected(true)
+    -->
     <TextView
         android:id="@+id/titletrackID"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
         android:layout_gravity="center_horizontal"
         android:text="@string/NoSong_Notification"
         android:fontFamily="@font/roboto"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:textStyle="bold"
         android:gravity="center"
         android:textColor="#FCFCFC"

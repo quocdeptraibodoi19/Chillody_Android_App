@@ -11,6 +11,9 @@
     + MaxLine: 1,2,3,4 will define the maximum number of line that your textview can store
     + singleLine = true: It will automatically set for your textview 1 line of text
     and it will reformat your textview like "abcdef" into "abc..." to fit the line
+    This is the updated:
+    android:ellipsize="end"
+    android:maxLines="1"
     -->
 
     <RelativeLayout
@@ -34,7 +37,8 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="12dp"
             android:fontFamily="@font/roboto"
-            android:singleLine="true"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:maxWidth="400dp"
             android:text="@string/preview_text"
             android:textColor="#FCFCFC"

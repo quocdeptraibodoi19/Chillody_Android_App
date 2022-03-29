@@ -132,6 +132,7 @@ public class music_fragment extends Fragment {
         binding.RecyclerImgViewID.setAdapter(unsplashImgAdapter);
         binding.RecyclerImgViewID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
         CurrentSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.musiclayouttitletrackID);
+        CurrentSongNameTextView.setSelected(true);
         NextSongNameTextView = binding.PlayerControlViewID.findViewById(R.id.NextSongTitletrackID);
         binding.PlayerControlViewID.setPlayer(singletonExoPlayer.getExoPlayer());
 

@@ -79,6 +79,7 @@ public class loving_playlist_fragment extends Fragment {
         Log.d("QuocLovingPlaylist", "onViewCreated: create the fragment");
         binding.lovingplayliststyledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
         titleTrackTextview = binding.lovingplayliststyledPlayerControlView.findViewById(R.id.titletrackID);
+        titleTrackTextview.setSelected(true);
         WhiteLoveBtn = binding.lovingplayliststyledPlayerControlView.findViewById(R.id.heartbtnID);
         RedLoveBtn = binding.lovingplayliststyledPlayerControlView.findViewById(R.id.heartREDbtnID);
         generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);

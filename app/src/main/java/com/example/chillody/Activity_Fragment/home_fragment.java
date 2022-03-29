@@ -92,7 +92,7 @@ public class home_fragment extends Fragment {
         binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
         generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         titleTrackTextview = binding.styledPlayerControlView.findViewById(R.id.titletrackID);
-
+        titleTrackTextview.setSelected(true);
         // !ishappen here is to restrict the condition such that the block code will be implemented only once at the intitial time
         // otherwise, when it move to another activity and backstack again, this callback (onviewcreated will be invoked again) ... thus
         // this method will be called again leading to it will register another observer to the data causing the malfunction of the app.
