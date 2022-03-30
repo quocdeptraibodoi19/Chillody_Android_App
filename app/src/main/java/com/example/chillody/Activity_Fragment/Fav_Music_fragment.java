@@ -315,9 +315,14 @@ public class Fav_Music_fragment extends Fragment {
                     Log.d("mamamia", "onViewCreated: In loop");
                     if(favoriteRecyclerViewManager.getCurrentChildView() != null)
                     {
-
-                        favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PauseID).setVisibility(View.VISIBLE);
-                        favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PlayID).setVisibility(View.GONE);
+                        if(singletonExoPlayer.getExoPlayer().isPlaying()) {
+                            favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PauseID).setVisibility(View.VISIBLE);
+                            favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PlayID).setVisibility(View.GONE);
+                        }
+                        else{
+                            favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PauseID).setVisibility(View.GONE);
+                            favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PlayID).setVisibility(View.VISIBLE);
+                        }
                     }
                 }
             };
