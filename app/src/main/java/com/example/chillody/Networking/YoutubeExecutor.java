@@ -28,6 +28,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.sql.Time;
+import java.text.DateFormat;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,7 +59,6 @@ public class YoutubeExecutor  {
     private ExecutorService executorService;
     private final GeneralSongRepository repository;
     private final FavSongRepository favSongRepository;
-    private int countFail = 0;
     private YoutubeMusicElement FailingElement = null;
     public YoutubeExecutor(@NonNull Application application) {
         singletonExoPlayer = SingletonExoPlayer.getInstance(application);
@@ -109,18 +110,29 @@ public class YoutubeExecutor  {
                         .url("https://simple-youtube-search.p.rapidapi.com/search?query="+new String(query.getBytes(StandardCharsets.UTF_8))+"&type=video&safesearch=true")
                         .get()
                         .addHeader("x-rapidapi-host", "simple-youtube-search.p.rapidapi.com")
-                        .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
+                        .addHeader("x-rapidapi-key", "54cba44633msh1cb81c3e7a90a1dp18697ajsn9159f3970b57")
                         .build();
 
                 try {
                     Response response = client.newCall(request).execute();
+                    String body = Objects.requireNonNull(response.body()).string();
+                    Log.d("QuocPhu", "run: the response body: "+ body);
                     // Processing the Json from the response body above
-                    JSONArray searchedSongsArray = new JSONObject(Objects.requireNonNull(response.body()).string()).getJSONArray("results");
+                    JSONArray searchedSongsArray = new JSONObject(body).getJSONArray("results");
                     String title;
                     String songId;
                     String songUrl;
+                    String duration;
+                    int durationLength;
+                    int k = 0;
                     // Todo: Be quick to do the optimization and update the i<2 (we set i<2 in order to save the resource)
-                    for(int i=lastUpdate; i< lastUpdate+2; i++){
+                    for(int i=lastUpdate; i< lastUpdate+2 + k; i++){
+                        duration = searchedSongsArray.getJSONObject(i - lastUpdate).getString("duration");
+                        durationLength = Integer.parseInt(duration);
+                        if(durationLength >= 3600000){
+                            k++;
+                            continue;
+                        }
                         title = searchedSongsArray.getJSONObject(i - lastUpdate).getString("title");
                         Log.d("YouBug", "run: "+ title);
                         songId = searchedSongsArray.getJSONObject(i - lastUpdate).getString("id");
@@ -131,7 +143,7 @@ public class YoutubeExecutor  {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
+                                .addHeader("x-rapidapi-key", "54cba44633msh1cb81c3e7a90a1dp18697ajsn9159f3970b57")
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
@@ -191,7 +203,7 @@ public class YoutubeExecutor  {
                         .url("https://youtube-search6.p.rapidapi.com/video/recommendation/?videoId="+lastSongID)
                         .get()
                         .addHeader("x-rapidapi-host", "youtube-search6.p.rapidapi.com")
-                        .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
+                        .addHeader("x-rapidapi-key", "54cba44633msh1cb81c3e7a90a1dp18697ajsn9159f3970b57'")
                         .build();
 
                 try {
@@ -200,10 +212,31 @@ public class YoutubeExecutor  {
                     String title;
                     String songId;
                     String songUrl;
+                    String duration;
+                    int firstDot = -1;
+                    int numDot = 0;
+                    int k = 0;
                     Bundle bundle = new Bundle();
-                    for(int i=lastIndexOfSong;i<lastIndexOfSong+2;i++){
+                    for(int i=lastIndexOfSong;i<lastIndexOfSong+2+k;i++){
                         title = SongArray.getJSONObject(i - lastIndexOfSong).getString("title");
                         songId = SongArray.getJSONObject(i - lastIndexOfSong).getString("video_id");
+                        duration = SongArray.getJSONObject(i - lastIndexOfSong).getString("video_length");
+                        for(int j = 0; j<duration.length(); j++){
+                            if(duration.charAt(j) == ':'){
+                                numDot++;
+                                if(firstDot == -1)
+                                    firstDot = j;
+                                if(numDot == 2){
+                                    break;
+                                }
+                            }
+                        }
+                        if(numDot == 2){
+                            if(duration.charAt(firstDot-1) >= '2'){
+                                k++;
+                                continue;
+                            }
+                        }
                         // To get the mp3 form from the ID of the youtube ID
                         Log.d("QuocMusic", "run: the title is: "+ title);
                         client = new OkHttpClient();
@@ -211,7 +244,7 @@ public class YoutubeExecutor  {
                                 .url("https://youtube-mp36.p.rapidapi.com/dl?id="+songId)
                                 .get()
                                 .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                                .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
+                                .addHeader("x-rapidapi-key", "54cba44633msh1cb81c3e7a90a1dp18697ajsn9159f3970b57")
                                 .build();
                         response = client.newCall(request).execute();
                         songUrl = new JSONObject(Objects.requireNonNull(response.body()).string()).getString("link");
@@ -235,51 +268,59 @@ public class YoutubeExecutor  {
     }
 
     // if failure happens, this will ignite in order to reload the url.
+    //TODO: Need to have the loader to notify user that in the process of fixing the song... they have to remain at that activity in case of crashing the app.
     public void failHandlingSong(String ID, int position){
+        if(singletonExoPlayer.isThreadProcessing() || isExecuting()) {
+            return;
+        }
         Log.d("Trong", "failHandlingSong: in the process of correcting the link");
-        if(singletonExoPlayer.isThreadProcessing() || isExecuting()) return;
         singletonExoPlayer.setThreadProcessing(true);
+        YoutubeMusicElement element ;
         ExoPlayer player = singletonExoPlayer.getExoPlayer();
+        if(player.getMediaItemAt(position).localConfiguration != null)
+            element = (YoutubeMusicElement) Objects.requireNonNull(player.getMediaItemAt(position).localConfiguration).tag;
+        else
+        {
+            singletonExoPlayer.setThreadProcessing(false);
+            FailingElement = null;
+            return;
+        }
         ExecutorService service = Executors.newFixedThreadPool(1);
         Handler handler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if(msg.what == EXE_FAILURE_SONG_MESSAGE){
+                    Log.d("Trong", "failHandlingSong: song is gonna be corrected");
                     // because you can't change the path of the uri that is available in the list
                     // the only way you can change the path of the uri is to delete it and create a new one
-                    if(player.getMediaItemAt(position).localConfiguration != null){
-                       YoutubeMusicElement element = (YoutubeMusicElement) Objects.requireNonNull(player.getMediaItemAt(position).localConfiguration).tag;
-                       // even though you change the DownLoadedMusicUrl, it just change the tag in the localConfiguration.
+                        // even though you change the DownLoadedMusicUrl, it just change the tag in the localConfiguration.
                         // the key element that helps you to listen the music is the Uri in the localConfiguration.
                         // But as mentioned above, the Uri cannot be changed because it does not have any set methods ( so stupid :) )
                         // therefore, the only way you can do is to remove the current one and substitute it with the new instance of that object.
-                       element.setDownloadedMusicUrl((String) msg.obj);
-                       if(FailingElement == null || FailingElement != element) {FailingElement = element; countFail =0;}
-                       if(countFail == 2){
-                           FailingElement = null;
-                           countFail = 0;
-                           player.removeMediaItem(position);
-                           return;
-                       }
+                        if (FailingElement == null || FailingElement != element) {
+                            FailingElement = element;
+                        }
+                        element.setDownloadedMusicUrl((String) msg.obj);
                         // why you have to add it at position +1 because this function will add the new object at that index +1 ( it means that the new added item' position will lie in that position +1 )
-                       player.addMediaItem(position+1,new MediaItem.Builder().setUri(element.getDownloadedMusicUrl()).setTag(element).build());
-                       // you remove the current old one :) .... so stupid. I don't understand why they do not provide the set method for the Uri object :).
+                        player.addMediaItem(position + 1, new MediaItem.Builder().setUri(element.getDownloadedMusicUrl()).setTag(element).build());
+                        // you remove the current old one :) .... so stupid. I don't understand why they do not provide the set method for the Uri object :).
                         player.removeMediaItem(position);
-                       // This is for the favorite loving music is stored in another table... therefore, we have to check for the suitable database.
+                        // This is for the favorite loving music is stored in another table... therefore, we have to check for the suitable database.
                         singletonExoPlayer.setErrorProcessedFlag(true);
                         // if you simply insert song into repository like this ... the order may not remain the same ( the new song even though it replaces the old one because of your defined way to resolve the conflict.... but the order may not remain the same... the new one will be added into the rear of the list)
                         // I mean in the past you used to use the function: repository.insertNewSong(element)
-                        if(!element.getMusicType().contains("Love"))
-                            repository.updateDownLoadUrl(element.getMusicID(),element.getDownloadedMusicUrl());
-                       // The same as above case... if you simply use  favSongRepository.InsertSongElement(), the order of the songs will no remain the same.
+                        if (!element.getMusicType().contains("Love"))
+                            repository.updateDownLoadUrl(element.getMusicID(), element.getDownloadedMusicUrl());
+                            // The same as above case... if you simply use  favSongRepository.InsertSongElement(), the order of the songs will no remain the same.
                         else
-                           favSongRepository.updateSongUrl(element.getMusicID(), element.getDownloadedMusicUrl());
-                       player.prepare();
-                       // because there is just one instance of message.Therefore, we can mark the finish flag here.
+                            favSongRepository.updateSongUrl(element.getMusicID(), element.getDownloadedMusicUrl());
+                    Log.d("Trong", "fxong is play");
+                    player.prepare();
+                        player.seekTo(position,0);
+                        player.play();
+                        // because there is just one instance of message.Therefore, we can mark the finish flag here.
                         singletonExoPlayer.setThreadProcessing(false);
-                        countFail++;
-                    }
                 }
             }
         };
@@ -293,7 +334,7 @@ public class YoutubeExecutor  {
                         .url("https://youtube-mp36.p.rapidapi.com/dl?id="+ID)
                         .get()
                         .addHeader("x-rapidapi-host", "youtube-mp36.p.rapidapi.com")
-                        .addHeader("x-rapidapi-key", "2f7623ad77msh3137288b2a135acp188a6ajsndd873d37bf36")
+                        .addHeader("x-rapidapi-key", "54cba44633msh1cb81c3e7a90a1dp18697ajsn9159f3970b57")
                         .build();
 
                 try {

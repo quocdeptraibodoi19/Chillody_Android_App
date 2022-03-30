@@ -86,17 +86,17 @@ public class music_fragment extends Fragment {
         switch (nameOfCategory){
             case "Chilling":
                 ImgQuery = "sadness city";
-                MusicQuery = "Ta da tung yeu nhau chua hao\n";
+                MusicQuery = "nho (moi ten anh thoi)";
                 Objects.requireNonNull(getActivity()).setTitle("Chilling Chillody");
                 break;
             case "Ghibli":
                 ImgQuery = "kyoto";
-                MusicQuery = "Studio Ghibli Emotional Melody : Cello Collection with Calcifer[作業用、睡眠用BGM、ジブリのチェロメドレー、吉卜力大提琴音樂集]";
+                MusicQuery = "ghibli lofi";
                 Objects.requireNonNull(getActivity()).setTitle("Ghibli Chillody");
                 break;
             case "Cafe":
                 ImgQuery = "cozy cafe";
-                MusicQuery = "japanese night cafe vibes / a lofi hip hop mix ~ chill with taiki";
+                MusicQuery = "cafe korean music";
                 Objects.requireNonNull(getActivity()).setTitle("Cafe Chillody");
                 break;
             default:
@@ -231,6 +231,15 @@ public class music_fragment extends Fragment {
                 CurrentSongNameTextView.setText("Loading...");
                 if(item != null && item.localConfiguration != null){
                     YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
+                    if(singletonExoPlayer.isFailingAgain(element)){
+                        singletonExoPlayer.getExoPlayer().removeMediaItem(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                        if (!element.getMusicType().contains("Love"))
+                            generalYoutubeViewModel.deleteSong(element);
+                        else
+                            favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), element.getMusicType()));
+                        return;
+                    }
+                    singletonExoPlayer.setLastFailingElement(element);
                     Throwable cause = error.getCause();
                     if (cause instanceof HttpDataSource.HttpDataSourceException) {
                         Log.d("QuocBug", "onPlayerError: In the outer condition of the playerError");

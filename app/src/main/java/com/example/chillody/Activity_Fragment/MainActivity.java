@@ -14,6 +14,10 @@ import com.example.chillody.Model.categoryObj;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: IF when you use, it gets crashed suddenly,... It may be due to the bad gateway of the server
+// and the asynchronous tasks in different thread that don't work properly and harmonically
+// If it can be updated the UI... that is maybe due to the time that the system allows is over or the bad gateway of the system
+
 public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {

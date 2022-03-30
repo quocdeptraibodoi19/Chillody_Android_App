@@ -27,6 +27,7 @@ import com.google.android.exoplayer2.MediaItem;
 import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -69,16 +70,28 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
             holder.playIMG.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // this is the case in which from other type we navigate to the loving music list
-                    if(singletonExoPlayer.getType().equals(favoriteRecyclerViewManager.getType()) && holder.getLayoutPosition() == favoriteRecyclerViewManager.getPosition()) {
+                    if(singletonExoPlayer.getExoPlayer().getCurrentMediaItem()!=null && singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration!=null){
+                         if(((YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag).getMusicID().equals(favoriteYoutubeElements.get(holder.getLayoutPosition()).getMusicID()) && singletonExoPlayer.getType().contains("Love")){
+                            singletonExoPlayer.getExoPlayer().play();
+                             TitleTrack.setText(favoriteYoutubeElements.get(holder.getLayoutPosition()).getTitle());
+                             Log.d("stress", "onClick: comebacking loving");
+                             return;
+                        }
+                    }
+                    Log.d("blackpink", "onClick: the type of an exoplayer: "+ String.valueOf(singletonExoPlayer.getType()));
+                    Log.d("blackpink", "onClick: the type of selected item: "+ String.valueOf(favoriteYoutubeElements.get(holder.getLayoutPosition()).getType()));
+                    Log.d("blackpink", "onClick: the type of manager: "+ String.valueOf(favoriteRecyclerViewManager.getType()));
+                    if(singletonExoPlayer.getType().equals(favoriteYoutubeElements.get(holder.getLayoutPosition()).getType()) && holder.getLayoutPosition() == favoriteRecyclerViewManager.getPosition()) {
+                        Log.d("blackpink", "onClick: if: 1");
                         singletonExoPlayer.getExoPlayer().play();
                     }
                     else if(!favoriteYoutubeElements.get(holder.getLayoutPosition()).getType().equals(singletonExoPlayer.getType()))
                     {
+                        Log.d("blackpink", "onClick: if: 2");
                         Log.d("MusicElement", "onClick: if 1");
                         Log.d("MusicElement", "onClick: real position: "+ String.valueOf(holder.getLayoutPosition()));
-                        singletonExoPlayer.setType(favoriteYoutubeElements.get(holder.getLayoutPosition()).getType());
                         singletonExoPlayer.EndMusic();
+                        singletonExoPlayer.setType(favoriteYoutubeElements.get(holder.getLayoutPosition()).getType());
                         for(int i=0;i<favoriteYoutubeElements.size();i++){
                             MediaItem mediaItem = new MediaItem.Builder()
                                     .setUri(favoriteYoutubeElements.get(i).getDownloadedMusicUrl())
@@ -95,6 +108,7 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                     }
                     // this is when the list in the singleton is matching with the real list in the loving fragment
                     else{
+                        Log.d("blackpink", "onClick: if: 3");
                         Log.d("MusicElement", "onClick: if "+ String.valueOf(holder.getLayoutPosition()));
                         singletonExoPlayer.getExoPlayer().pause();
                         singletonExoPlayer.getExoPlayer().seekTo(holder.getLayoutPosition(),0);
@@ -146,7 +160,13 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                                             element.setFavorite(false);
                                             if(element.getMusicType().contains("Love"))
                                             {
+
                                                 singletonExoPlayer.getExoPlayer().removeMediaItem(i);
+                                                if(i == singletonExoPlayer.getExoPlayer().getMediaItemCount()){
+                                                    singletonExoPlayer.getExoPlayer().seekTo(singletonExoPlayer.getExoPlayer().getMediaItemCount()-1,0);
+                                                    singletonExoPlayer.getExoPlayer().prepare();
+                                                    singletonExoPlayer.getExoPlayer().play();
+                                                }
                                                 if(singletonExoPlayer.getType().equals(favoriteRecyclerViewManager.getType()) && i == favoriteRecyclerViewManager.getPosition()) {
                                                     favoriteRecyclerViewManager.setPosition(-1);
                                                 }

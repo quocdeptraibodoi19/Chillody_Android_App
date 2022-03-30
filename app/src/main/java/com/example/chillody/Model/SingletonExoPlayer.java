@@ -14,6 +14,7 @@ public class SingletonExoPlayer {
     private boolean isThreadProcessing = false;
     private boolean isErrorProcessed = false;
     private int UpdatingUIFlag = -1;
+    private YoutubeMusicElement lastFailingElement;
     private SingletonExoPlayer(Application application){
         exoPlayer = new ExoPlayer.Builder(application).build();
     }
@@ -56,5 +57,11 @@ public class SingletonExoPlayer {
     public void setErrorProcessedFlag(boolean isErrorProcessed){
         this.isErrorProcessed = isErrorProcessed;
     }
-
+    public void setLastFailingElement(YoutubeMusicElement element){
+        lastFailingElement = element;
+    }
+    public boolean isFailingAgain(YoutubeMusicElement element){
+        if(lastFailingElement == null) return false;
+        return lastFailingElement.getMusicID().equals(element.getMusicID()) && lastFailingElement.getMusicType().equals(element.getMusicType());
+    }
 }

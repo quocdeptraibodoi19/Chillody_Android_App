@@ -102,13 +102,8 @@ public class Fav_Music_fragment extends Fragment {
                 Log.d("Asshit", "onChanged: The size of favelements: "+ String.valueOf(favoriteYoutubeElements.size()));
                 if(ChillingIsWhiteClick){
                     ChillingIsWhiteClick = false;
-                    Log.d("Asshit", "onChanged: QUOC TRONG WHITE CLICK");
                     favoriteRecyclerViewManager.setFlag(singletonExoPlayer.getType());
-                    Log.d("condime", "onChanged: the size of adapter: "+ String.valueOf(ChillingAdapter.getItemCount()));
                     favoriteRecyclerViewManager.setPosition(ChillingAdapter.getItemCount()-1);
-                    Log.d("YOU", "onChanged: POSITION: "+ String.valueOf(favoriteRecyclerViewManager.getPosition()));
-                    Log.d("YOU", "onChanged: FLAG: "+ String.valueOf(favoriteRecyclerViewManager.getType()));
-                    Log.d("YOU", "onChanged: SIZE OF CHILLING: "+ String.valueOf(favoriteRecyclerViewManager.getChillingSize()));
                     // This is bug because when we click the heart icon and the dataset in the adapter is changed. It needs a bit of time to prepare and load a view to the new data item in the adapter.
                     // But in the old way, after the data changes, we try to update the UI component of the new data item ( the pause and play icon); even though the number of item of the viewholder or adapter is updated but we are not sure the view is loaded.
                     // Therefore, the solution to this problem is that, we procrastinate the process of updating the UI component by put it to another thread and sleep that thread for a bit of time.
@@ -141,7 +136,6 @@ public class Fav_Music_fragment extends Fragment {
 //                        }
 //                    };
 //                    handler.post(runnable);
-
                     // it will not block the UI thread... this will act as the alarmer ... to set the time for the execution in the UI thread.
                     Handler handler = new Handler();
                     Runnable runnable = new Runnable() {
@@ -191,18 +185,26 @@ public class Fav_Music_fragment extends Fragment {
             public void onChanged(List<FavoriteYoutubeElement> favoriteYoutubeElements) {
                 if(favoriteYoutubeElements.size() ==0) binding.CafemusictextviewID.setVisibility(View.GONE);
                 else binding.CafemusictextviewID.setVisibility(View.VISIBLE);
+                CafeAdapter.setCurrentList(favoriteYoutubeElements);
                 favoriteRecyclerViewManager.setCafeSize(favoriteYoutubeElements.size());
                 if(CafeIsWhiteClick){
                     CafeIsWhiteClick = false;
-                    favoriteRecyclerViewManager.setPosition(0);
-                    if(favoriteRecyclerViewManager.getCurrentChildView() != null)
-                    {
-                        favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PauseID).setVisibility(View.VISIBLE);
-                        favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PlayID).setVisibility(View.GONE);
-                    }
+                    favoriteRecyclerViewManager.setFlag(singletonExoPlayer.getType());
+                    favoriteRecyclerViewManager.setPosition(CafeAdapter.getItemCount()-1);
+                    Handler handler = new Handler();
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            if(favoriteRecyclerViewManager.getCurrentChildView() != null)
+                            {
+                                favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PauseID).setVisibility(View.VISIBLE);
+                                favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PlayID).setVisibility(View.GONE);
+                            }
+                        }
+                    };
+                    handler.postDelayed(runnable,1000);
                 }
                 Log.d("QuocLiveChange", "onChanged: cafenumber: "+String.valueOf(favoriteYoutubeElements.size()));
-                CafeAdapter.setCurrentList(favoriteYoutubeElements);
             }
         });
         favoriteYoutubeViewModel.getFavGhibliSongs().observe(getViewLifecycleOwner(), new Observer<List<FavoriteYoutubeElement>>() {
@@ -210,18 +212,27 @@ public class Fav_Music_fragment extends Fragment {
             public void onChanged(List<FavoriteYoutubeElement> favoriteYoutubeElements) {
                 if(favoriteYoutubeElements.size() == 0) binding.GhiblimusictextviewID.setVisibility(View.GONE);
                 else binding.GhiblimusictextviewID.setVisibility(View.VISIBLE);
+                GhibliAdapter.setCurrentList(favoriteYoutubeElements);
+
                 favoriteRecyclerViewManager.setGhibliSize(favoriteYoutubeElements.size());
                 if(GhibliIsWhiteClick){
                     GhibliIsWhiteClick = false;
-                    favoriteRecyclerViewManager.setPosition(0);
-                    if(favoriteRecyclerViewManager.getCurrentChildView() != null)
-                    {
-                        favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PauseID).setVisibility(View.VISIBLE);
-                        favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PlayID).setVisibility(View.GONE);
-                    }
+                    favoriteRecyclerViewManager.setFlag(singletonExoPlayer.getType());
+                    favoriteRecyclerViewManager.setPosition(GhibliAdapter.getItemCount()-1);
+                    Handler handler = new Handler();
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            if(favoriteRecyclerViewManager.getCurrentChildView() != null)
+                            {
+                                favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PauseID).setVisibility(View.VISIBLE);
+                                favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PlayID).setVisibility(View.GONE);
+                            }
+                        }
+                    };
+                    handler.postDelayed(runnable,1000);
                 }
                 Log.d("QuocLiveChange", "onChanged: ghiblinumber: "+String.valueOf(favoriteYoutubeElements.size()));
-                GhibliAdapter.setCurrentList(favoriteYoutubeElements);
             }
         });
 
@@ -293,7 +304,29 @@ public class Fav_Music_fragment extends Fragment {
                 generalYoutubeViewModel.updateDislikeMusicElement(element);
             }
         });
-       listener = new Player.Listener() {
+        if(singletonExoPlayer.getType().contains("Love")){
+            Handler handler = new Handler(Looper.getMainLooper());
+
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    favoriteRecyclerViewManager.setFlag(singletonExoPlayer.getType());
+                    favoriteRecyclerViewManager.setPosition(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                    Log.d("mamamia", "onViewCreated: In loop");
+                    if(favoriteRecyclerViewManager.getCurrentChildView() != null)
+                    {
+
+                        favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PauseID).setVisibility(View.VISIBLE);
+                        favoriteRecyclerViewManager.getCurrentChildView().findViewById(R.id.PlayID).setVisibility(View.GONE);
+                    }
+                }
+            };
+            handler.postDelayed(runnable,1000);
+        }
+        Log.d("mamamia", "onViewCreated: type: "+String.valueOf(favoriteRecyclerViewManager.getType()));
+        Log.d("mamamia", "onViewCreated: position: "+String.valueOf(favoriteRecyclerViewManager.getPosition()));
+
+        listener = new Player.Listener() {
            @Override
            public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
                if(singletonExoPlayer.getType().contains("Love")){
@@ -383,6 +416,9 @@ public class Fav_Music_fragment extends Fragment {
         super.onResume();
         Log.d("QuocMusicFragment", "onResume: Resumming");
         if(isHappenBefore){
+            if(singletonExoPlayer.getType().contains("Love")){
+
+            }
             singletonExoPlayer.getExoPlayer().addListener(listener);
         }
         isHappenBefore = true;

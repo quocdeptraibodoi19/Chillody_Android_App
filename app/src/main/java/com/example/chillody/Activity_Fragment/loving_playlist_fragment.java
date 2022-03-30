@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -178,7 +180,33 @@ public class loving_playlist_fragment extends Fragment {
                     YoutubeMusicElement element = (YoutubeMusicElement) item.localConfiguration.tag;
                     Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
                     titleTrackTextview.setText("Loading...");
+                    if(singletonExoPlayer.isFailingAgain(element)){
+                        singletonExoPlayer.getExoPlayer().removeMediaItem(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                        if (!element.getMusicType().contains("Love"))
+                            generalYoutubeViewModel.deleteSong(element);
+                        else
+                            favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), element.getMusicType()));
+                        return;
+                    }
+                    singletonExoPlayer.setLastFailingElement(element);
+                    if(getActivity() != null)
                     new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                    else{
+                        Thread thread = new Thread(){
+                            @Override
+                            public void run() {
+                                super.run();
+                                try {
+                                    Thread.sleep(1000);
+                                    if(getActivity() != null)
+                                        new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        };
+                        thread.start();
+                    }
                 }
             }
             @Override
@@ -202,7 +230,24 @@ public class loving_playlist_fragment extends Fragment {
                         Log.d("QuocBug", "onMediaItemTransition: True");
                     else Log.d("QuocBug", "onMediaItemTransition: False");
                     YoutubeMusicElement LastElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
-                    new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+                    if(getActivity() != null)
+                        new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+                    else{
+                        Thread thread = new Thread(){
+                            @Override
+                            public void run() {
+                                super.run();
+                                try {
+                                    Thread.sleep(1000);
+                                    if(getActivity() != null)
+                                        new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        };
+                        thread.start();
+                    }
                 }
             }
         };
