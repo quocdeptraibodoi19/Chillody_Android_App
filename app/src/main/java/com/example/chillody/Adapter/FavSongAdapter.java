@@ -136,6 +136,8 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                     if(favoriteYoutubeElements.size() != 0)
                     {
                         generalYoutubeViewModel.updateDislikeMusicElement(favoriteYoutubeElements.get(holder.getLayoutPosition()).getMusicID());
+                        favoriteYoutubeViewModel.DeleteSongElements(favoriteYoutubeElements.get(holder.getLayoutPosition()));
+
                         if(singletonExoPlayer.getExoPlayer().getMediaItemCount() != 0)
                         {
                             if(favoriteYoutubeElements.get(holder.getLayoutPosition()).getType().contains(singletonExoPlayer.getType())){
@@ -160,9 +162,8 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                                             element.setFavorite(false);
                                             if(element.getMusicType().contains("Love"))
                                             {
-
                                                 singletonExoPlayer.getExoPlayer().removeMediaItem(i);
-                                                if(i == singletonExoPlayer.getExoPlayer().getMediaItemCount()){
+                                                if(i == singletonExoPlayer.getExoPlayer().getMediaItemCount() && singletonExoPlayer.getExoPlayer().getMediaItemCount() != 0){
                                                     singletonExoPlayer.getExoPlayer().seekTo(singletonExoPlayer.getExoPlayer().getMediaItemCount()-1,0);
                                                     singletonExoPlayer.getExoPlayer().prepare();
                                                     singletonExoPlayer.getExoPlayer().play();
@@ -182,7 +183,7 @@ public class FavSongAdapter extends RecyclerView.Adapter<FavSongAdapter.FavSongV
                                                 whiteBtn.setVisibility(View.VISIBLE);
                                                 redBtn.setVisibility(View.GONE);
                                             }
-                                            favoriteYoutubeViewModel.DeleteSongElements(favoriteYoutubeElements.get(holder.getLayoutPosition()));
+//                                            favoriteYoutubeViewModel.DeleteSongElements(favoriteYoutubeElements.get(holder.getLayoutPosition()));
                                             break;
                                         }
                                     }
