@@ -182,10 +182,17 @@ public class loving_playlist_fragment extends Fragment {
                     titleTrackTextview.setText("Loading...");
                     if(singletonExoPlayer.isFailingAgain(element)){
                         singletonExoPlayer.getExoPlayer().removeMediaItem(singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                        if(singletonExoPlayer.getExoPlayer().getMediaItemCount() == 0){
+                            titleTrackTextview.setText(getString(R.string.NoSong_Notification));
+                        }
                         if (!element.getMusicType().contains("Love"))
-                            generalYoutubeViewModel.deleteSong(element);
-                        else
+                        generalYoutubeViewModel.deleteSong(element);
+                        else {
                             favoriteYoutubeViewModel.DeleteSongElements(new FavoriteYoutubeElement(element.getMusicID(), element.getDownloadedMusicUrl(), element.getTitle(), element.getMusicType()));
+                            generalYoutubeViewModel.updateDislikeMusicElement(element);
+                            RedLoveBtn.setVisibility(View.GONE);
+                            WhiteLoveBtn.setVisibility(View.VISIBLE);
+                        }
                         return;
                     }
                     singletonExoPlayer.setLastFailingElement(element);
