@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/musiclayouttitletrackID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:layout_marginHorizontal="32dp"
+        android:text="@string/loading"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        android:fontFamily="@font/roboto"
+        android:textStyle="bold"
+        android:textColor="#FCFCFC"
+        android:textSize="28sp" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_gravity="end"
+        android:layout_marginHorizontal="32dp">
+        <TextView
+            android:id="@+id/exo_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/exo_duration_time_str"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:layout_alignParentEnd="true" />
+        <TextView
+            android:id="@+id/exo_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/exo_position_time_string"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:layout_alignParentStart="true"/>
+    </RelativeLayout>
+    <com.google.android.exoplayer2.ui.DefaultTimeBar
+        android:id="@+id/exo_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="8dp"
+        app:scrubber_color="#BABAF4"
+        app:played_color="#6F6FF2"
+        app:unplayed_color="#676767" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/exo_play_pause"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:padding="0dp"
+            android:src="@drawable/ic_play"
+            app:tint="#FCFCFC" />
+
+        <ImageView
+            android:id="@+id/exo_prev"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/exo_play_pause"
+            android:src="@drawable/ic_prev"
+            app:tint="#FCFCFC" />
+        <ImageView
+            android:id="@+id/exo_next"
+            android:layout_centerVertical="true"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_toEndOf="@id/exo_play_pause"
+            android:src="@drawable/ic_next"
+            app:tint="#FCFCFC"/>
+    </RelativeLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Next song"
+        android:layout_marginTop="8dp"
+        android:textSize="15sp"
+        android:fontFamily="@font/roboto"
+        android:textColor="#FCFCFC"
+        android:layout_marginHorizontal="32dp"/>
+    <TextView
+        android:id="@+id/NextSongTitletrackID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="@string/loading"
+        android:textColor="#FCFCFC"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"/>
+</LinearLayout>

@@ -1,0 +1,24 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="416dp"
+    android:height="400dp"
+    android:viewportWidth="416"
+    android:viewportHeight="400">
+    <group
+        android:name="group"
+        android:pivotX="215"
+        android:pivotY="215">
+        <path
+            android:name="instagram"
+            android:pathData="M 105 1 C 47.571 1 1 50.704 1 112.027 C 1 161.529 19.2 279.016 198.35 397.781 C 201.559 399.886 205.244 401 209 401 C 212.756 401 216.441 399.886 219.65 397.781 C 398.8 279.016 417 161.529 417 112.027 C 417 50.704 370.429 1 313 1 C 255.571 1 209 68.289 209 68.289 C 209 68.289 162.429 1 105 1 Z"
+            android:fillColor="#000000"
+            android:strokeColor="#fcfcfc"
+            android:strokeWidth="2"
+            android:trimPathStart="0.5"
+            android:trimPathEnd="0.5"
+            android:trimPathOffset="1"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"/>
+    </group>
+</vector>

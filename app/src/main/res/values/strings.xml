@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Chillody</string>
+    <string name="preview_text">Lorem ipsum dolor sit.</string>
+    <string name="chillody_name">Chillody</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="loading">Loading...</string>
+    <string name="NoSong_Notification">No Song In The List Currently</string>
+    <string name="chilling">Chilling</string>
+    <string name="cafe">Cafe</string>
+    <string name="ghibli">Ghibli</string>
+    <string name="exo_duration_time_str">4:32</string>
+    <string name="exo_position_time_string">0:00</string>
+    <string name="no_song_slogan">No Song In The List</string>
+</resources>

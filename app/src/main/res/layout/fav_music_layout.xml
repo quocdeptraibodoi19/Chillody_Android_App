@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity_Fragment.Fav_Music_fragment"
+    android:background="#292959">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+                <TextView
+                    android:id="@+id/ChillingmusictextviewID"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="14dp"
+                    android:fontFamily="@font/roboto"
+                    android:text="@string/chilling"
+                    android:textColor="#FCFCFC"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/ChillingfavmusiclistID"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:overScrollMode="never"
+                    tools:listitem="@layout/fav_music_item"/>
+
+                <TextView
+                    android:id="@+id/CafemusictextviewID"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="14dp"
+                    android:fontFamily="@font/roboto"
+                    android:text="@string/cafe"
+                    android:textColor="#FCFCFC"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/CafefavmusiclistID"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="14dp"
+                    tools:listitem="@layout/fav_music_item"/>
+
+                <TextView
+                    android:id="@+id/GhiblimusictextviewID"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="14dp"
+                    android:fontFamily="@font/roboto"
+                    android:text="@string/ghibli"
+                    android:textColor="#FCFCFC"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/GhiblifavmusiclistID"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="14dp"
+                    tools:listitem="@layout/fav_music_item"/>
+                <include
+                    layout="@layout/my_controller_layout"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_marginBottom="10dp"
+                     android:visibility="invisible"/>
+        </LinearLayout>
+</ScrollView>

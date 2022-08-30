@@ -1,0 +1,63 @@
+<!-- This is the xml file exported from https://shapeshifter.design/
+   ... this website allows us to design the animation from the image in the form svg,...
+   and it allows us to export that animation as many forms. One of these forms is animated vector
+     this is the tutorial for the basic knowledge about this tool: https://www.youtube.com/watch?v=hgVt-EoB280&t=326s -->
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="vector"
+            android:width="48dp"
+            android:height="40dp"
+            android:viewportWidth="422"
+            android:viewportHeight="402">
+            <group
+                android:name="group"
+                android:pivotX="215"
+                android:pivotY="215">
+                <path
+                    android:name="path"
+                    android:pathData="M 106 1 C 48.019 1 1 50.704 1 112.027 C 1 161.529 19.375 279.016 200.248 397.781 C 203.488 399.886 207.207 401 211 401 C 214.793 401 218.512 399.886 221.752 397.781 C 402.625 279.016 421 161.529 421 112.027 C 421 50.704 373.981 1 316 1 C 258.019 1 211 68.289 211 68.289 C 211 68.289 163.981 1 106 1 Z"
+                    android:fillColor="#ea2027"
+                    android:strokeColor="#ea2027"
+                    android:strokeWidth="2"
+                    android:strokeLineCap="round"
+                    android:strokeLineJoin="round"/>
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="group">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="scaleX"
+                    android:duration="400"
+                    android:valueFrom="0"
+                    android:valueTo="0.85"
+                    android:valueType="floatType"
+                    android:interpolator="@android:anim/overshoot_interpolator"/>
+                <objectAnimator
+                    android:propertyName="scaleY"
+                    android:duration="400"
+                    android:valueFrom="0"
+                    android:valueTo="0.85"
+                    android:valueType="floatType"
+                    android:interpolator="@android:anim/overshoot_interpolator"/>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="path">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="fillAlpha"
+                    android:duration="50"
+                    android:valueFrom="0"
+                    android:valueTo="1"
+                    android:valueType="floatType"
+                    android:interpolator="@android:anim/accelerate_interpolator"/>
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

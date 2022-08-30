@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#292959"
+    tools:context=".Activity_Fragment.music_fragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/RecyclerImgViewID"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="#404343"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <ProgressBar
+        android:id="@+id/ProgressBarID"
+        android:indeterminateTint="#FCFCFC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/RecyclerImgViewID"
+        app:layout_constraintEnd_toEndOf="@+id/RecyclerImgViewID"
+        app:layout_constraintStart_toStartOf="@+id/RecyclerImgViewID"
+        app:layout_constraintTop_toTopOf="@+id/RecyclerImgViewID" />
+
+    <com.google.android.exoplayer2.ui.StyledPlayerControlView
+        android:id="@+id/PlayerControlViewID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        app:show_timeout="0"
+        app:controller_layout_id="@layout/music_controller_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RecyclerImgViewID" />
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/LovingButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#F26D6D"
+        android:fontFamily="@font/roboto"
+        android:padding="12dp"
+        android:visibility="visible"
+        app:icon="@drawable/heart_solid_24"
+        app:iconTint="#F4F4F4"
+        android:text="Add song to favorite"
+        android:textAllCaps="false"
+        android:textColor="#332A1C"
+        android:textSize="16sp"
+        app:cornerRadius="8dp"
+        app:iconGravity="textStart"
+        app:iconPadding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/UnLovingButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#F4F4F4"
+        android:fontFamily="@font/roboto"
+        android:padding="12dp"
+        android:visibility="gone"
+        app:icon="@drawable/trash_pink_24px"
+        app:iconTint="#eb2f06"
+        android:text="Remove song from favorite"
+        android:textAllCaps="false"
+        android:textColor="#332A1C"
+        android:textSize="16sp"
+        app:cornerRadius="8dp"
+        app:iconGravity="textStart"
+        app:iconPadding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <!--
+        (ctrl + shift + /)
+       if you set the icon in the material button, remember that the color of the added icon will no longer depend on the initial color of the source image
+       it now can be customized through the domestic attribute of the material button
+       For instance of the above UnlovingButton, the initial color trash icon is pink, but when moving into the material button,
+       its color no longer depends on the color of the initial source
+       ( remember the default color of the icon in the material button is white)
+    -->
+</androidx.constraintlayout.widget.ConstraintLayout>
