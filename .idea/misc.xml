@@ -39,9 +39,11 @@
         <entry key="..\:/project_flutter/Chillody/app/src/main/res/layout/music_layout_fragment.xml" value="0.14666666666666667" />
         <entry key="..\:/project_flutter/Chillody/app/src/main/res/layout/my_controller_layout.xml" value="0.22" />
         <entry key="..\:/project_flutter/Chillody/app/src/main/res/layout/my_controller_layout_ver2.xml" value="0.17552083333333332" />
+        <entry key="..\:/project_flutter/Chillody_Android_App-main/Chillody_Android_App-main/app/src/main/res/layout/home_layout_fragment.xml" value="0.17552083333333332" />
       </map>
     </option>
   </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
