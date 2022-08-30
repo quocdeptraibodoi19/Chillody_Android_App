@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
@@ -322,6 +323,7 @@ public class home_fragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        Objects.requireNonNull(((AppCompatActivity) requireActivity()).getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
         Log.d("QuocLife", "HomeFragment: onResume: "+ String.valueOf(isHappenBefore));
         // isHappenBefore is to restrict this callback to not be called at the first time( because as mentioned above, when the system first create this fragment , the onresume() is still called)
         if(isHappenBefore){
@@ -357,4 +359,9 @@ public class home_fragment extends Fragment {
         isHappenBefore = true;
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        Objects.requireNonNull(((AppCompatActivity) requireActivity()).getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+    }
 }
