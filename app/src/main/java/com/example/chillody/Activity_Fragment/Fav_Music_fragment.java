@@ -75,13 +75,13 @@ public class Fav_Music_fragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
+        singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         FavoriteYoutubeViewModel favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
         GeneralYoutubeViewModel generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         Log.d("QuocMusicFragment", "onViewCreated: Creating");
         favoriteRecyclerViewManager = new FavoriteRecyclerViewManager(binding.ChillingfavmusiclistID, binding.CafefavmusiclistID, binding.GhiblifavmusiclistID);
 
-        ChillingAdapter = new FavSongAdapter(binding.getRoot().getContext(), Objects.requireNonNull(getActivity()).getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong,whiteBtn,redBtn,favoriteRecyclerViewManager);
+        ChillingAdapter = new FavSongAdapter(binding.getRoot().getContext(), requireActivity().getApplication(), favoriteYoutubeViewModel, generalYoutubeViewModel,NameSong,whiteBtn,redBtn,favoriteRecyclerViewManager);
         binding.ChillingfavmusiclistID.setAdapter(ChillingAdapter);
         binding.ChillingfavmusiclistID.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 

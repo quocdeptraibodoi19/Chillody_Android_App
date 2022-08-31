@@ -87,23 +87,23 @@ public class music_fragment extends Fragment {
             case "Chilling":
                 ImgQuery = "sadness city";
                 MusicQuery = "nho (moi ten anh thoi)";
-                Objects.requireNonNull(getActivity()).setTitle("Chilling Chillody");
+                requireActivity().setTitle("Chilling Chillody");
                 break;
             case "Ghibli":
                 ImgQuery = "kyoto";
                 MusicQuery = "ghibli lofi";
-                Objects.requireNonNull(getActivity()).setTitle("Ghibli Chillody");
+                requireActivity().setTitle("Ghibli Chillody");
                 break;
             case "Cafe":
                 ImgQuery = "cozy cafe";
                 MusicQuery = "cafe korean music";
-                Objects.requireNonNull(getActivity()).setTitle("Cafe Chillody");
+                requireActivity().setTitle("Cafe Chillody");
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + nameOfCategory);
         }
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
-        sharedPreferences = Objects.requireNonNull(getContext()).getSharedPreferences(home_fragment.sharedFile+nameOfCategory, Context.MODE_PRIVATE);
+        sharedPreferences = requireContext().getSharedPreferences(home_fragment.sharedFile+nameOfCategory, Context.MODE_PRIVATE);
         MediaItemPosition = sharedPreferences.getInt(home_fragment.LAST_EXOPOSITEM_STATE,0);
         currentImagePage = sharedPreferences.getInt(UNSPLASH_IMG_CURRENT_CURRENT_PAGE_FLAG,1);
         currentImagePosition = sharedPreferences.getInt(UNSPLASH_IMG_CURRENT_POS_FLAG,0);
@@ -129,7 +129,7 @@ public class music_fragment extends Fragment {
         unsplashImgModel = ViewModelProviders.of(this).get(UnsplashImgModel.class);
         GeneralYoutubeViewModel generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
-        youtubeExecutor = new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication());
+        youtubeExecutor = new YoutubeExecutor(requireActivity().getApplication());
         binding.ProgressBarID.setIndeterminateDrawable(new FoldingCube());
         UnsplashImgAdapter unsplashImgAdapter = new UnsplashImgAdapter(binding.getRoot().getContext(),binding.ProgressBarID,favoriteUnsplashImgViewModel);
         binding.RecyclerImgViewID.setAdapter(unsplashImgAdapter);
@@ -437,7 +437,7 @@ public class music_fragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
+        SingletonExoPlayer.getInstance(requireActivity().getApplication()).getExoPlayer().removeListener(listener);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
         MediaItemPosition =exoPlayer.getCurrentMediaItemIndex();

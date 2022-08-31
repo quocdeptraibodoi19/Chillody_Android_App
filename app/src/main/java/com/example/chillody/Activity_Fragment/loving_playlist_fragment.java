@@ -57,7 +57,7 @@ public class loving_playlist_fragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        sharedPreferences = Objects.requireNonNull(getActivity()).getSharedPreferences(home_fragment.sharedFile,Context.MODE_PRIVATE);
+        sharedPreferences = requireActivity().getSharedPreferences(home_fragment.sharedFile,Context.MODE_PRIVATE);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class loving_playlist_fragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         Log.d("QuocLovingPlaylist", "onCreateView: create the fragment");
-        singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
+        singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         binding = LovingPlaylistFragmentLayoutBinding.inflate(inflater,container,false);
         getActivity().setTitle("Loving Chillody");
         return binding.getRoot();
@@ -90,7 +90,7 @@ public class loving_playlist_fragment extends Fragment {
         // Processing the TabLayout
         binding.tablayoutID.addTab(binding.tablayoutID.newTab().setText("Favorite Songs"));
         binding.tablayoutID.addTab(binding.tablayoutID.newTab().setText("Favorite Images"));
-        FavPageAdapter favPageAdapter = new FavPageAdapter(Objects.requireNonNull(getActivity()).getSupportFragmentManager(),binding.tablayoutID.getTabCount(),titleTrackTextview,WhiteLoveBtn,RedLoveBtn);
+        FavPageAdapter favPageAdapter = new FavPageAdapter(requireActivity().getSupportFragmentManager(),binding.tablayoutID.getTabCount(),titleTrackTextview,WhiteLoveBtn,RedLoveBtn);
         binding.viewpagerID.setAdapter(favPageAdapter);
         // There are 2 listeners for the Tab and its corresponding content layout
         binding.viewpagerID.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tablayoutID));
@@ -167,7 +167,7 @@ public class loving_playlist_fragment extends Fragment {
             if(singletonExoPlayer.getType().contains("Love")) return;
             Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
             YoutubeMusicElement LastElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration).tag;
-            new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+            new YoutubeExecutor(requireActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
         }
         // Processing the ExoPlayer
 
@@ -197,7 +197,7 @@ public class loving_playlist_fragment extends Fragment {
                     }
                     singletonExoPlayer.setLastFailingElement(element);
                     if(getActivity() != null)
-                    new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                    new YoutubeExecutor(requireActivity().getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
                     else{
                         Thread thread = new Thread(){
                             @Override
@@ -206,7 +206,7 @@ public class loving_playlist_fragment extends Fragment {
                                 try {
                                     Thread.sleep(1000);
                                     if(getActivity() != null)
-                                        new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                                        new YoutubeExecutor(requireActivity().getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -238,7 +238,7 @@ public class loving_playlist_fragment extends Fragment {
                     else Log.d("QuocBug", "onMediaItemTransition: False");
                     YoutubeMusicElement LastElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
                     if(getActivity() != null)
-                        new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+                        new YoutubeExecutor(requireActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
                     else{
                         Thread thread = new Thread(){
                             @Override
@@ -247,7 +247,7 @@ public class loving_playlist_fragment extends Fragment {
                                 try {
                                     Thread.sleep(1000);
                                     if(getActivity() != null)
-                                        new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+                                        new YoutubeExecutor(requireActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -311,7 +311,7 @@ public class loving_playlist_fragment extends Fragment {
                 if(singletonExoPlayer.getType().contains("Love")) return;
                 Log.d("QuocMusic", "onPlaybackStateChanged: Loading more song");
                 YoutubeMusicElement LastElement = (YoutubeMusicElement) Objects.requireNonNull(singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration).tag;
-                new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+                new YoutubeExecutor(requireActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
 
             }
 //            singletonExoPlayer.getExoPlayer().addListener(listener);
