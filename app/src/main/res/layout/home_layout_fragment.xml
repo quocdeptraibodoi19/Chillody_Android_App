@@ -10,7 +10,7 @@
     <include
         android:id="@+id/content_home_id"
         layout="@layout/home_content_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/styledPlayerControlView"
         app:layout_constraintEnd_toEndOf="parent"
