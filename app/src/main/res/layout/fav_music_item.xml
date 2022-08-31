@@ -32,11 +32,11 @@
             android:id="@+id/nameItemID"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/PlayID"
+            android:layout_alignEnd="@+id/place_view_id"
             android:layout_alignParentStart="true"
             android:layout_marginStart="8dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="16dp"
             android:layout_marginBottom="12dp"
             android:ellipsize="end"
             android:fontFamily="@font/roboto"
@@ -53,6 +53,15 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="12dp"
             android:src="@drawable/trash_pink_24px" />
+        <ImageView
+            android:id="@+id/place_view_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="4dp"
+            android:layout_toStartOf="@+id/trashID"
+            android:visibility="invisible"
+            android:src="@drawable/ic_play_ver2"/>
 
         <ImageView
             android:id="@+id/PlayID"

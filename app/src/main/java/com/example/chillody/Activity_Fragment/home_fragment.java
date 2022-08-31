@@ -70,7 +70,7 @@ public class home_fragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("QuocLife", "HomeFragment: onCreate: ");
-        sharedPreferences = Objects.requireNonNull(getActivity()).getSharedPreferences(sharedFile,Context.MODE_PRIVATE);
+        sharedPreferences = requireActivity().getSharedPreferences(sharedFile,Context.MODE_PRIVATE);
         categoryObjList.add(new categoryObj("Chilling","https://c0.wallpaperflare.com/preview/259/493/306/person-car-cloud-sunset.jpg"));
         categoryObjList.add(new categoryObj("Cafe","https://c4.wallpaperflare.com/wallpaper/805/668/874/lofi-neon-coffee-house-shop-neon-glow-hd-wallpaper-preview.jpg"));
         categoryObjList.add(new categoryObj("Ghibli","https://studioghiblimovies.com/wp-content/uploads/2020/03/barcode-scanners-qr-code-2d-code-creative-barcode.jpg"));
@@ -84,19 +84,19 @@ public class home_fragment extends Fragment {
         Log.d("QuocLife", "HomeFragment: onCreateView: ");
         // Inflate the layout for this fragment
         binding =HomeLayoutFragmentBinding.inflate(inflater,container,false);
-        Objects.requireNonNull(getActivity()).setTitle("Chillody");
+        requireActivity().setTitle("Chillody");
         // this is for the feature that when we first load the home_fragment, the new quote will add to the textview
-        if(binding.MusicQuoteID.getText().equals(getString(R.string.preview_text)) && !isHappenBefore)
+        if(binding.contentHomeId.MusicQuoteID.getText().equals(getString(R.string.preview_text)) && !isHappenBefore)
         {
             Log.d("lucquoc", "onCreateView: inside the executing of quote");
-            binding.MusicQuoteID.setText(getString(R.string.loading));
-            binding.ArtistID.setText("");
-            new MusicQuoteAsyncTask(binding.MusicQuoteID, binding.ArtistID,artist,quote).execute();
+            binding.contentHomeId.MusicQuoteID.setText(getString(R.string.loading));
+            binding.contentHomeId.ArtistID.setText("");
+            new MusicQuoteAsyncTask(binding.contentHomeId.MusicQuoteID, binding.contentHomeId.ArtistID,artist,quote).execute();
         }
         // for other time when the home_fragment is loaded (second time, third time...), this view will use the old quote to save the resource, the limit of time accessing the API
         else{
-            binding.MusicQuoteID.setText(quote);
-            binding.ArtistID.setText(artist);
+            binding.contentHomeId.MusicQuoteID.setText(quote);
+            binding.contentHomeId.ArtistID.setText(artist);
         }
         return binding.getRoot();
     }
@@ -105,7 +105,7 @@ public class home_fragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.d("QuocLife", "HomeFragment: onViewCreated: ");
-        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
+        SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
         binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
         generalYoutubeViewModel = ViewModelProviders.of(this).get(GeneralYoutubeViewModel.class);
         titleTrackTextview = binding.styledPlayerControlView.findViewById(R.id.titletrackID);
@@ -204,8 +204,8 @@ public class home_fragment extends Fragment {
 
         CategoryAdapter categoryAdapter = new CategoryAdapter(binding.getRoot().getContext(),home_fragment.this);
         categoryAdapter.setCategoryObjList(categoryObjList);
-        binding.recyclerView.setAdapter(categoryAdapter);
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
+        binding.contentHomeId.recyclerView.setAdapter(categoryAdapter);
+        binding.contentHomeId.recyclerView.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
 
         favoriteYoutubeViewModel = ViewModelProviders.of(this).get(FavoriteYoutubeViewModel.class);
         Log.d("QuocBug", "onViewCreated: in the home_fragment of the onviewcreated");
@@ -272,7 +272,7 @@ public class home_fragment extends Fragment {
                     singletonExoPlayer.setLastFailingElement(element);
                     Toast.makeText(binding.getRoot().getContext(), "Please wait a minute", Toast.LENGTH_LONG).show();
                     titleTrackTextview.setText("Loading...");
-                    new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
+                    new YoutubeExecutor(requireActivity().getApplication()).failHandlingSong(element.getMusicID(),singletonExoPlayer.getExoPlayer().getCurrentMediaItemIndex());
                 }
             }
             @Override
@@ -297,7 +297,7 @@ public class home_fragment extends Fragment {
                     Log.d("QuocBug", "onMediaItemTransition: True");
                     else Log.d("QuocBug", "onMediaItemTransition: False");
                     YoutubeMusicElement LastElement = (YoutubeMusicElement) singletonExoPlayer.getExoPlayer().getCurrentMediaItem().localConfiguration.tag;
-                    new YoutubeExecutor(Objects.requireNonNull(getActivity()).getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
+                    new YoutubeExecutor(requireActivity().getApplication()).MusicRecommendingExecutor(LastElement.getMusicID(),null,null);
                 }
             }
         };
@@ -308,7 +308,7 @@ public class home_fragment extends Fragment {
     public void onPause() {
         super.onPause();
         Log.d("QuocLife", "HomeFragment: onPause: ");
-        SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication()).getExoPlayer().removeListener(listener);
+        SingletonExoPlayer.getInstance(requireActivity().getApplication()).getExoPlayer().removeListener(listener);
         SharedPreferences.Editor editor = sharedPreferences.edit();
        ExoPlayer exoPlayer = SingletonExoPlayer.getInstance(getActivity().getApplication()).getExoPlayer();
        exoPlayerType = SingletonExoPlayer.getInstance(getActivity().getApplication()).getType();
@@ -316,8 +316,8 @@ public class home_fragment extends Fragment {
        editor.putInt(LAST_EXOPOSITEM_STATE,MediaItemPosition);
         Log.d("QuocBug", "onPause: MediaPosition: "+String.valueOf(MediaItemPosition));
        editor.putString(LAST_EXOTYPE_STATE,exoPlayerType);
-       artist = binding.ArtistID.getText().toString();
-       quote = binding.MusicQuoteID.getText().toString();
+       artist = binding.contentHomeId.ArtistID.getText().toString();
+       quote = binding.contentHomeId.MusicQuoteID.getText().toString();
        editor.apply();
     }
     @Override
@@ -328,7 +328,7 @@ public class home_fragment extends Fragment {
         // isHappenBefore is to restrict this callback to not be called at the first time( because as mentioned above, when the system first create this fragment , the onresume() is still called)
         if(isHappenBefore){
             Log.d("QuocLife", "onResume: Inside resume");
-              SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(Objects.requireNonNull(getActivity()).getApplication());
+              SingletonExoPlayer singletonExoPlayer = SingletonExoPlayer.getInstance(requireActivity().getApplication());
               binding.styledPlayerControlView.setPlayer(singletonExoPlayer.getExoPlayer());
               MediaItem item = singletonExoPlayer.getExoPlayer().getCurrentMediaItem();
             // This is to update the UI, sync the data of ExoPlayer of category fragment into this fragment
